@@ -125,8 +125,8 @@ final class WorkspaceService: ObservableObject {
         task.standardError = Pipe()
         do {
             try task.run()
-            task.waitUntilExit()
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            task.waitUntilExit()
             return String(data: data, encoding: .utf8)
         } catch {
             return nil
