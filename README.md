@@ -1,90 +1,41 @@
 # Zog
 
-A Swift/SwiftUI **macOS chrome replacement** — floating menu-bar islands and a vertical side dock — inspired by [SketchyBar](https://github.com/FelixKratz/SketchyBar) and the modular “pill / island” setups in the design references.
+Swift/SwiftUI macOS chrome replacement that recreates the floating-island menu bar and geometric vertical dock from the provided reference screenshots, using the same overlay approach as [SketchyBar](https://github.com/FelixKratz/SketchyBar).
 
-Zog does not wrap SketchyBar’s C binary. It reimplements the same *idea* (replace the system menu bar + dock with custom floating UI) as a native AppKit/`NSPanel` + SwiftUI app.
+## Reference layout (matched)
 
-## Design
+**Top — discrete floating capsules** (not a continuous bar):
 
-| Element | Behavior |
+| Position | Content |
 |---|---|
-| **Apple island** | Far-left capsule with the Apple mark |
-| **App menu island** | Frontmost app icon + name + File/Edit/View/Window/Help |
-| **Media island** | Centered Now Playing (artwork, title, artist, transport) |
-| **Status cluster** | Mail · utilities · battery (green) · Wi‑Fi · volume |
-| **Clock island** | Monospaced `dd/MM HH:mm` |
-| **Vertical dock** | Right-edge capsule: brand, workspace dots, apps, appearance |
+| Far left | Apple mark alone in a small near-square pod |
+| Left | App icon + name + File / Edit / View / Window / Help |
+| Center | Media: artwork · title · artist · ⏮ ▶ ⏭ |
+| Right | Envelope · utilities (B / cursor / grid / ▾) · battery+wifi+speaker · clock `dd/MM HH:mm` |
 
-Visual language matches the references: dark translucent material, high corner radii, ~12pt screen inset, discrete floating pods instead of a continuous bar.
+**Right — slim vertical dock** (refs 1 & 4):
 
-## Architecture
+- Cube mark + 3×3 dot grid  
+- Colored workspace dots (yellow / blue / cyan) with micro dividers  
+- Geometric glyphs (rects, 2×2 grid, pill toggle, blocks, globe) — **not** colorful app icons  
+- Half-moon appearance + checkmark · minute numeral  
 
-```
-Zog/
-├── App/            Entry + AppDelegate (accessory policy, chrome hide)
-├── Theme/          Design tokens (colors, radii, motion)
-├── Core/           PanelWindow, ScreenLayout, SystemChrome
-├── MenuBar/        MenuBarController + island views
-├── Dock/           VerticalDockView + DockController
-├── Services/       Clock, battery, Wi‑Fi, media, workspaces, apps
-└── Views/          Shared island chrome + Settings
-```
+See [`docs/design-preview.html`](docs/design-preview.html) for a static recreation of this layout.
 
-Overlays use borderless `NSPanel`s at status/dock window levels so they float above normal windows, join all Spaces, and stay non-activating.
+## Build
 
-## Requirements
-
-- macOS 14+
-- Xcode 15+
-- Accessibility / Automation permission (for menu clicks & appearance toggle)
-- Optional: [yabai](https://github.com/koekeishiya/yabai) for live workspace switching
-
-## Build & run
+macOS 14+, Xcode 15+:
 
 ```bash
 open Zog.xcodeproj
 ```
 
-Select the **Zog** scheme → Run.
+Run the **Zog** scheme. Grant Accessibility + Automation when prompted. Optional: [yabai](https://github.com/koekeishiya/yabai) for live Spaces.
 
-Or from the CLI:
+On launch Zog autohides the native Dock / menu bar; quitting restores prior Dock settings.
 
-```bash
-xcodebuild -scheme Zog -configuration Debug build
-open ~/Library/Developer/Xcode/DerivedData/Zog-*/Build/Products/Debug/Zog.app
-```
+## Stack
 
-A static layout mock of the floating islands lives in [`docs/design-preview.html`](docs/design-preview.html).
-
-On launch Zog:
-
-1. Sets activation policy to `.accessory` (no Dock icon for itself)
-2. Autohides the native Dock and requests menu-bar auto-hide
-3. Shows the floating islands + vertical dock
-
-Quitting restores the previous Dock autohide settings.
-
-## SketchyBar mapping
-
-| SketchyBar concept | Zog equivalent |
-|---|---|
-| Transparent bar + brackets | Separate `NSPanel` islands |
-| `--bar position / margin / y_offset` | `ScreenLayout` + `ZogTheme.screenInset` |
-| Items / plugins (scripts) | Swift `*Service` classes |
-| `background.corner_radius` | `ZogTheme.islandRadius` / capsule chrome |
-| Vertical bar (experimental) | First-class `VerticalDockView` |
-| Events / subscribe | Combine + `NSWorkspace` notifications |
-
-## Permissions
-
-Grant in **System Settings → Privacy & Security**:
-
-- **Accessibility** — menu triggering, chrome control  
-- **Automation** — System Events AppleScript  
-- **Files and Folders** (if prompted)
-
-Media artwork uses the private **MediaRemote** framework (same approach as many SketchyBar media plugins).
-
-## License
-
-See the repository root `LICENSE`. SketchyBar itself is a separate project by Felix Kratz — Zog is an independent Swift reimplementation of the floating-chrome idea.
+- Borderless `NSPanel` overlays at status/dock window levels  
+- SwiftUI island views + AppKit layout  
+- Services: clock, battery (IOKit), Wi‑Fi (CoreWLAN), Now Playing (MediaRemote), workspaces (yabai), apps  

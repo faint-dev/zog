@@ -1,36 +1,42 @@
 import AppKit
 import SwiftUI
 
-/// Compact utility / notification / connectivity cluster on the top-right.
+/// Right-side island cluster matching the reference screenshots:
+/// envelope · utilities (B / cursor / grid / chevron) · battery+wifi · clock
 struct StatusIsland: View {
     @ObservedObject var battery: BatteryService
     @ObservedObject var network: NetworkService
 
     var body: some View {
         HStack(spacing: ZogTheme.islandGap) {
-            IslandContainer {
-                SFIcon(systemName: "envelope", size: 12)
+            // Notification
+            IslandContainer(compact: true) {
+                SFIcon(systemName: "envelope", size: 11)
             }
             .help("Mail")
 
+            // Utilities — B · selection · grid · chevron (ref 2)
             IslandContainer {
-                HStack(spacing: 10) {
-                    SFIcon(systemName: "b.circle", size: 12)
-                    SFIcon(systemName: "cursorarrow.click.2", size: 11, color: ZogTheme.foregroundMuted)
-                    SFIcon(systemName: "square.grid.2x2", size: 12)
-                    SFIcon(systemName: "chevron.down", size: 9, color: ZogTheme.foregroundMuted)
+                HStack(spacing: 9) {
+                    Text("B")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(ZogTheme.foreground)
+                    SFIcon(systemName: "cursorarrow", size: 10, color: ZogTheme.foregroundMuted)
+                    SFIcon(systemName: "square.grid.2x2", size: 11)
+                    SFIcon(systemName: "chevron.down", size: 8, color: ZogTheme.foregroundMuted)
                 }
             }
             .help("Utilities")
 
+            // Connectivity / power (ref 1: battery · wifi · speaker)
             IslandContainer {
-                HStack(spacing: 10) {
+                HStack(spacing: 9) {
                     batteryIcon
                     wifiIcon
-                    SFIcon(systemName: "speaker.wave.2.fill", size: 12, color: ZogTheme.foregroundMuted)
+                    SFIcon(systemName: "speaker.wave.2.fill", size: 11, color: ZogTheme.foregroundMuted)
                 }
             }
-            .help("System Status")
+            .help("System")
         }
     }
 
@@ -58,13 +64,13 @@ struct StatusIsland: View {
     private var wifiIcon: some View {
         SFIcon(
             systemName: network.isWiFiConnected ? "wifi" : "wifi.slash",
-            size: 12,
+            size: 11,
             color: network.isWiFiConnected ? ZogTheme.foreground : ZogTheme.foregroundDim
         )
     }
 }
 
-/// Clock island — monospaced `dd/MM HH:mm` like the references.
+/// Separate clock capsule — monospaced `dd/MM HH:mm` (refs: `25/07 00:10`).
 struct ClockIsland: View {
     @ObservedObject var clock: ClockService
 
@@ -77,13 +83,9 @@ struct ClockIsland: View {
         }
         .help("Date & Time")
         .onTapGesture {
-            openDateSettings()
-        }
-    }
-
-    private func openDateSettings() {
-        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.datetime") {
-            NSWorkspace.shared.open(url)
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.datetime") {
+                NSWorkspace.shared.open(url)
+            }
         }
     }
 }

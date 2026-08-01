@@ -17,7 +17,8 @@ final class DockController {
         let root = AnyView(
             VerticalDockView(
                 workspaces: services.workspaces,
-                dockApps: services.dockApps
+                dockApps: services.dockApps,
+                clock: services.clock
             )
             .padding(4)
         )
@@ -40,23 +41,23 @@ final class DockController {
         panel.setRootView(AnyView(
             VerticalDockView(
                 workspaces: services.workspaces,
-                dockApps: services.dockApps
+                dockApps: services.dockApps,
+                clock: services.clock
             )
             .padding(4)
         ))
     }
 
     private func estimatedHeight() -> CGFloat {
-        // Header + workspaces + apps + footer with paddings
         let workspaceCount = CGFloat(max(services.workspaces.spaces.count, 1))
-        let appCount = CGFloat(min(services.dockApps.apps.count, 6))
-        let base: CGFloat = 120
-        return base + workspaceCount * 18 + appCount * 40 + 80
+        // Header (cube+grid) + workspaces + geometric glyphs + footer
+        return 70 + workspaceCount * 20 + 140 + 90
     }
 
     private func observe() {
         services.workspaces.objectWillChange
             .merge(with: services.dockApps.objectWillChange)
+            .merge(with: services.clock.objectWillChange)
             .debounce(for: .milliseconds(80), scheduler: RunLoop.main)
             .sink { [weak self] _ in self?.reposition() }
             .store(in: &cancellables)

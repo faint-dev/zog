@@ -1,8 +1,8 @@
 import AppKit
 import SwiftUI
 
-/// Application context island: icon + name + menu titles
-/// (matches the "Cursor Nightly · File Edit View…" reference).
+/// App context island: icon + name + menu titles in one capsule
+/// (matches "Cursor Nightly · File Edit View Window Help" reference).
 struct AppMenuIsland: View {
     @ObservedObject var frontmost: FrontmostAppService
 
@@ -10,29 +10,24 @@ struct AppMenuIsland: View {
 
     var body: some View {
         IslandContainer {
-            HStack(spacing: 10) {
-                AppIconView(image: frontmost.current.icon, size: 16)
+            HStack(spacing: 8) {
+                AppIconView(image: frontmost.current.icon, size: 15)
 
                 Text(frontmost.current.name)
-                    .font(ZogTheme.titleFont)
+                    .font(ZogTheme.appNameFont)
                     .foregroundStyle(ZogTheme.foreground)
                     .lineLimit(1)
 
-                Rectangle()
-                    .fill(ZogTheme.foregroundDim)
-                    .frame(width: 1, height: 14)
-                    .padding(.horizontal, 2)
-
-                HStack(spacing: 14) {
+                HStack(spacing: 12) {
                     ForEach(menus, id: \.self) { title in
                         Text(title)
                             .font(ZogTheme.menuFont)
-                            .foregroundStyle(ZogTheme.foregroundMuted)
-                            .onTapGesture {
-                                triggerMenu(named: title)
-                            }
+                            .foregroundStyle(ZogTheme.foreground)
+                            .opacity(0.88)
+                            .onTapGesture { triggerMenu(named: title) }
                     }
                 }
+                .padding(.leading, 4)
             }
         }
     }
