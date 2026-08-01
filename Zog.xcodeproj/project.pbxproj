@@ -1,0 +1,408 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		342037B130554308BBCFF0DE /* ZogConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10EFE3292B54D7CA3EEAA2F /* ZogConfig.swift */; };
+		1BC65C1D5A294989AE08BBF1 /* ZogApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9C4E2265EA44DB9E189BEA /* ZogApp.swift */; };
+		B4AFCD1FB3FF4482850921DB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DFF98D3ABE41479EB06F32 /* AppDelegate.swift */; };
+		293956402C60442CA211B3A8 /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5A61C28D02470993474E44 /* DesignTokens.swift */; };
+		FEBF0F123FE243BAA0949A7D /* PanelWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27EE58DA9536404BB4A6F774 /* PanelWindow.swift */; };
+		473C644F644A4E069AEDFC8E /* ScreenLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE9C0AFAD94D4B20AB6EDB21 /* ScreenLayout.swift */; };
+		6BBCC793F8CA4C198360C799 /* SystemChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDBCCCBC369F42F6A20D4129 /* SystemChrome.swift */; };
+		9E4FD712843D42DBBAC550B0 /* ServiceContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACAAE07A4B7945CE8E1677B9 /* ServiceContainer.swift */; };
+		88314218574848548EAAFA2A /* ClockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB75467A54D46CEA2F646CD /* ClockService.swift */; };
+		C22DEAC92C294C02B538AE64 /* BatteryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F626CC523A9347C3987A0E46 /* BatteryService.swift */; };
+		538E8745B5854013A7CCBC31 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81313F129E3F46EEBEE75085 /* NetworkService.swift */; };
+		AFAF20251A2F49909231651D /* FrontmostAppService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCA179943DE14DCCAAAE3FC0 /* FrontmostAppService.swift */; };
+		C034B28B9C66422096711556 /* NowPlayingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3EE5DB456CA444397DB09A4 /* NowPlayingService.swift */; };
+		8FBDFAC077894B9B97A098C4 /* WorkspaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 362EFF968DCB4C31901163CE /* WorkspaceService.swift */; };
+		06B2BD5F2DEF42BCA6158EE4 /* DockAppsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADC34C9BF2B5480293E13CE3 /* DockAppsService.swift */; };
+		2F5FD6FCC39B4F0097F081C6 /* SharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD93D320F35848ADA3DF2689 /* SharedComponents.swift */; };
+		31C9F4551A1D468EAB94EA31 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C690EC1B9F84E998C47C0FD /* SettingsView.swift */; };
+		9084EB37A2AF4DCE8F480637 /* AppleIsland.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6BFA92248A945E4823B1A65 /* AppleIsland.swift */; };
+		74063A07F5594DBFB652B077 /* AppMenuIsland.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5F3B8662B2F4810B8415641 /* AppMenuIsland.swift */; };
+		9C7E4545905A440D9F9D29FD /* MediaIsland.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DB3B0B520634E269E68DB05 /* MediaIsland.swift */; };
+		97DE0CC381A0471B9129E8FA /* StatusIsland.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9CEA645F5A476CB1052C83 /* StatusIsland.swift */; };
+		DAF0FEBDA48A4D248F462E1B /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A52CD2B3D894505B1BE04F1 /* MenuBarController.swift */; };
+		B9B884C6883C462BB3DD6482 /* VerticalDockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F83BF07A8EB4EFC8158A773 /* VerticalDockView.swift */; };
+		F8F054A118414D2D806CCA48 /* DockController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9D686A88CE4DC28CF80F35 /* DockController.swift */; };
+		857C5ADEE00A4054B40B8BC2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8BD89EC4DB1E44C0A770F80B /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		E10EFE3292B54D7CA3EEAA2F /* ZogConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZogConfig.swift; sourceTree = "<group>"; };
+		AABB6801E5EE40758A41A016 /* Zog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Zog.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE9C4E2265EA44DB9E189BEA /* ZogApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZogApp.swift; sourceTree = "<group>"; };
+		13DFF98D3ABE41479EB06F32 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		DC5A61C28D02470993474E44 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
+		27EE58DA9536404BB4A6F774 /* PanelWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelWindow.swift; sourceTree = "<group>"; };
+		BE9C0AFAD94D4B20AB6EDB21 /* ScreenLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenLayout.swift; sourceTree = "<group>"; };
+		EDBCCCBC369F42F6A20D4129 /* SystemChrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemChrome.swift; sourceTree = "<group>"; };
+		ACAAE07A4B7945CE8E1677B9 /* ServiceContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceContainer.swift; sourceTree = "<group>"; };
+		7BB75467A54D46CEA2F646CD /* ClockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockService.swift; sourceTree = "<group>"; };
+		F626CC523A9347C3987A0E46 /* BatteryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryService.swift; sourceTree = "<group>"; };
+		81313F129E3F46EEBEE75085 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		CCA179943DE14DCCAAAE3FC0 /* FrontmostAppService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrontmostAppService.swift; sourceTree = "<group>"; };
+		A3EE5DB456CA444397DB09A4 /* NowPlayingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingService.swift; sourceTree = "<group>"; };
+		362EFF968DCB4C31901163CE /* WorkspaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceService.swift; sourceTree = "<group>"; };
+		ADC34C9BF2B5480293E13CE3 /* DockAppsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DockAppsService.swift; sourceTree = "<group>"; };
+		FD93D320F35848ADA3DF2689 /* SharedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedComponents.swift; sourceTree = "<group>"; };
+		3C690EC1B9F84E998C47C0FD /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		E6BFA92248A945E4823B1A65 /* AppleIsland.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleIsland.swift; sourceTree = "<group>"; };
+		C5F3B8662B2F4810B8415641 /* AppMenuIsland.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMenuIsland.swift; sourceTree = "<group>"; };
+		2DB3B0B520634E269E68DB05 /* MediaIsland.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaIsland.swift; sourceTree = "<group>"; };
+		2C9CEA645F5A476CB1052C83 /* StatusIsland.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusIsland.swift; sourceTree = "<group>"; };
+		2A52CD2B3D894505B1BE04F1 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
+		7F83BF07A8EB4EFC8158A773 /* VerticalDockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalDockView.swift; sourceTree = "<group>"; };
+		3B9D686A88CE4DC28CF80F35 /* DockController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DockController.swift; sourceTree = "<group>"; };
+		2D47399E5D514F6EBD84B186 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3A82DBCF4EB6477FBA87D9CF /* Zog.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Zog.entitlements; sourceTree = "<group>"; };
+		8BD89EC4DB1E44C0A770F80B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		476AB34DBAC040BCA4642638 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		807C76EF19E043E6B9DBCF41 = {
+			isa = PBXGroup;
+			children = (
+				D5ED22F841084FE980D27535 /* Zog */,
+				FFC73CE433D8410089558A41 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FFC73CE433D8410089558A41 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AABB6801E5EE40758A41A016 /* Zog.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D5ED22F841084FE980D27535 /* Zog */ = {
+			isa = PBXGroup;
+			children = (
+				6CADDC3C71744465AD3BCCF2 /* App */,
+				908C80B00871420190D47D3A /* Core */,
+				C85F6317A1FF4D28A60F9F7C /* Dock */,
+				E46DE47E418940968567F271 /* MenuBar */,
+				782CC1A903D0429880E4E99E /* Services */,
+				44D0F6CFF4B0468189113D2E /* Theme */,
+				8CAA4C023CB9421A8161427F /* Views */,
+				E9E392466465417CBB7A92E1 /* Resources */,
+			);
+			path = Zog;
+			sourceTree = "<group>";
+		};
+		E9E392466465417CBB7A92E1 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				2D47399E5D514F6EBD84B186 /* Info.plist */,
+				3A82DBCF4EB6477FBA87D9CF /* Zog.entitlements */,
+				8BD89EC4DB1E44C0A770F80B /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		6CADDC3C71744465AD3BCCF2 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				EE9C4E2265EA44DB9E189BEA /* ZogApp.swift */,
+				13DFF98D3ABE41479EB06F32 /* AppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		908C80B00871420190D47D3A /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				E10EFE3292B54D7CA3EEAA2F /* ZogConfig.swift */,
+				27EE58DA9536404BB4A6F774 /* PanelWindow.swift */,
+				BE9C0AFAD94D4B20AB6EDB21 /* ScreenLayout.swift */,
+				EDBCCCBC369F42F6A20D4129 /* SystemChrome.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		C85F6317A1FF4D28A60F9F7C /* Dock */ = {
+			isa = PBXGroup;
+			children = (
+				7F83BF07A8EB4EFC8158A773 /* VerticalDockView.swift */,
+				3B9D686A88CE4DC28CF80F35 /* DockController.swift */,
+			);
+			path = Dock;
+			sourceTree = "<group>";
+		};
+		E46DE47E418940968567F271 /* MenuBar */ = {
+			isa = PBXGroup;
+			children = (
+				C99E7748A82D472FB3EC6004 /* Islands */,
+				2A52CD2B3D894505B1BE04F1 /* MenuBarController.swift */,
+			);
+			path = MenuBar;
+			sourceTree = "<group>";
+		};
+		782CC1A903D0429880E4E99E /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				ACAAE07A4B7945CE8E1677B9 /* ServiceContainer.swift */,
+				7BB75467A54D46CEA2F646CD /* ClockService.swift */,
+				F626CC523A9347C3987A0E46 /* BatteryService.swift */,
+				81313F129E3F46EEBEE75085 /* NetworkService.swift */,
+				CCA179943DE14DCCAAAE3FC0 /* FrontmostAppService.swift */,
+				A3EE5DB456CA444397DB09A4 /* NowPlayingService.swift */,
+				362EFF968DCB4C31901163CE /* WorkspaceService.swift */,
+				ADC34C9BF2B5480293E13CE3 /* DockAppsService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		44D0F6CFF4B0468189113D2E /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				DC5A61C28D02470993474E44 /* DesignTokens.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		8CAA4C023CB9421A8161427F /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				FD93D320F35848ADA3DF2689 /* SharedComponents.swift */,
+				3C690EC1B9F84E998C47C0FD /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		C99E7748A82D472FB3EC6004 /* Islands */ = {
+			isa = PBXGroup;
+			children = (
+				E6BFA92248A945E4823B1A65 /* AppleIsland.swift */,
+				C5F3B8662B2F4810B8415641 /* AppMenuIsland.swift */,
+				2DB3B0B520634E269E68DB05 /* MediaIsland.swift */,
+				2C9CEA645F5A476CB1052C83 /* StatusIsland.swift */,
+			);
+			path = Islands;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2153A9D40FC74608AAAA36B4 /* Zog */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D494E969E6D744C687784B03 /* Build configuration list for PBXNativeTarget "Zog" */;
+			buildPhases = (
+				FCB662251FB84059931DE92B /* Sources */,
+				476AB34DBAC040BCA4642638 /* Frameworks */,
+				FFB6DF6EE7D44CEC8FB48FF7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Zog;
+			productName = Zog;
+			productReference = AABB6801E5EE40758A41A016 /* Zog.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2BC8A6A01F114649B49F5E19 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					2153A9D40FC74608AAAA36B4 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 1C89B6BB48E54E1EA482A101 /* Build configuration list for PBXProject "Zog" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 807C76EF19E043E6B9DBCF41;
+			productRefGroup = FFC73CE433D8410089558A41 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2153A9D40FC74608AAAA36B4 /* Zog */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FFB6DF6EE7D44CEC8FB48FF7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				857C5ADEE00A4054B40B8BC2 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FCB662251FB84059931DE92B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				342037B130554308BBCFF0DE /* ZogConfig.swift in Sources */,
+				1BC65C1D5A294989AE08BBF1 /* ZogApp.swift in Sources */,
+				B4AFCD1FB3FF4482850921DB /* AppDelegate.swift in Sources */,
+				293956402C60442CA211B3A8 /* DesignTokens.swift in Sources */,
+				FEBF0F123FE243BAA0949A7D /* PanelWindow.swift in Sources */,
+				473C644F644A4E069AEDFC8E /* ScreenLayout.swift in Sources */,
+				6BBCC793F8CA4C198360C799 /* SystemChrome.swift in Sources */,
+				9E4FD712843D42DBBAC550B0 /* ServiceContainer.swift in Sources */,
+				88314218574848548EAAFA2A /* ClockService.swift in Sources */,
+				C22DEAC92C294C02B538AE64 /* BatteryService.swift in Sources */,
+				538E8745B5854013A7CCBC31 /* NetworkService.swift in Sources */,
+				AFAF20251A2F49909231651D /* FrontmostAppService.swift in Sources */,
+				C034B28B9C66422096711556 /* NowPlayingService.swift in Sources */,
+				8FBDFAC077894B9B97A098C4 /* WorkspaceService.swift in Sources */,
+				06B2BD5F2DEF42BCA6158EE4 /* DockAppsService.swift in Sources */,
+				2F5FD6FCC39B4F0097F081C6 /* SharedComponents.swift in Sources */,
+				31C9F4551A1D468EAB94EA31 /* SettingsView.swift in Sources */,
+				9084EB37A2AF4DCE8F480637 /* AppleIsland.swift in Sources */,
+				74063A07F5594DBFB652B077 /* AppMenuIsland.swift in Sources */,
+				9C7E4545905A440D9F9D29FD /* MediaIsland.swift in Sources */,
+				97DE0CC381A0471B9129E8FA /* StatusIsland.swift in Sources */,
+				DAF0FEBDA48A4D248F462E1B /* MenuBarController.swift in Sources */,
+				B9B884C6883C462BB3DD6482 /* VerticalDockView.swift in Sources */,
+				F8F054A118414D2D806CCA48 /* DockController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A996BAAE84FF4A3BAC82EEFB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		A4E31B5275AA42DFB10098F6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		F3F3AF8E02A84101A186E0AF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Zog/Resources/Zog.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Zog/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.faint.zog;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		316A03551FB0432A87B238C6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Zog/Resources/Zog.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Zog/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.faint.zog;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1C89B6BB48E54E1EA482A101 /* Build configuration list for PBXProject "Zog" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A996BAAE84FF4A3BAC82EEFB /* Debug */,
+				A4E31B5275AA42DFB10098F6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D494E969E6D744C687784B03 /* Build configuration list for PBXNativeTarget "Zog" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F3F3AF8E02A84101A186E0AF /* Debug */,
+				316A03551FB0432A87B238C6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2BC8A6A01F114649B49F5E19 /* Project object */;
+}
