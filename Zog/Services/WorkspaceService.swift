@@ -90,18 +90,30 @@ final class WorkspaceService: ObservableObject {
     }
 
     @discardableResult
-    private func run(_ path: String, arguments: [String]) -> Bool {
+    private func run(_ path: String, arguments: [String], timeout: TimeInterval = 2.0) -> Bool {
         guard FileManager.default.isExecutableFile(atPath: path) else { return false }
         let task = Process()
         task.executableURL = URL(fileURLWithPath: path)
         task.arguments = arguments
+
+        let semaphore = DispatchSemaphore(value: 0)
+        task.terminationHandler = { _ in
+            semaphore.signal()
+        }
+
         do {
             try task.run()
-            task.waitUntilExit()
-            return task.terminationStatus == 0
         } catch {
             return false
         }
+
+        let result = semaphore.wait(timeout: .now() + timeout)
+        if result == .timedOut {
+            task.terminate()
+            return false
+        }
+
+        return task.terminationStatus == 0
     }
 
     private func runCapture(_ path: String, arguments: [String]) -> String? {
