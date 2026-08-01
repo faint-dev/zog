@@ -45,7 +45,7 @@ final class NetworkService: ObservableObject {
         // Wi-Fi details via CoreWLAN when available
         if let interface = CWWiFiClient.shared().interface() {
             ssid = interface.ssid()
-            isWiFiConnected = reachable && (ssid != nil || interface.powerOn())
+            isWiFiConnected = reachable && ssid != nil
             let rssi = interface.rssiValue()
             signalBars = bars(from: rssi)
         } else {
