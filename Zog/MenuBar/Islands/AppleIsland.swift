@@ -13,7 +13,7 @@ struct AppleIsland: View {
         .onTapGesture {
             var error: NSDictionary?
             NSAppleScript(source: """
-            tell application "System Events" to click menu bar item 1 of menu bar 1
+            tell application "System Events" to tell process "SystemUIServer" to click menu bar item 1 of menu bar 1
             """)?.executeAndReturnError(&error)
         }
     }

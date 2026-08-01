@@ -8,6 +8,7 @@ enum SystemChrome {
     private static var previousAutohide: Bool?
     private static var previousAutohideDelay: Double?
     private static var previousAutohideTimeModifier: Double?
+    private static var previousHideMenuBar: Bool?
 
     static func hideNativeChrome() {
         // Prefer soft-hide via Dock autohide so we don't fight System Settings permanently.
@@ -22,6 +23,7 @@ enum SystemChrome {
 
         // Hide the system menu bar automatically (macOS Sonoma+ Desktop & Dock setting).
         // Falls back silently on older systems.
+        previousHideMenuBar = defaultsBool(domain: "NSGlobalDomain", key: "_HIHideMenuBar")
         runDefaults(["write", "NSGlobalDomain", "_HIHideMenuBar", "-bool", "true"])
         DistributedNotificationCenter.default().postNotificationName(
             NSNotification.Name("AppleInterfaceThemeChangedNotification"),
@@ -37,11 +39,17 @@ enum SystemChrome {
         }
         if let previousAutohideDelay {
             runDefaults(["write", dockDomain, "autohide-delay", "-float", "\(previousAutohideDelay)"])
+        } else {
+            runDefaults(["delete", dockDomain, "autohide-delay"])
         }
         if let previousAutohideTimeModifier {
             runDefaults(["write", dockDomain, "autohide-time-modifier", "-float", "\(previousAutohideTimeModifier)"])
+        } else {
+            runDefaults(["delete", dockDomain, "autohide-time-modifier"])
         }
-        runDefaults(["write", "NSGlobalDomain", "_HIHideMenuBar", "-bool", "false"])
+        if let previousHideMenuBar {
+            runDefaults(["write", "NSGlobalDomain", "_HIHideMenuBar", "-bool", previousHideMenuBar ? "true" : "false"])
+        }
         restartDock()
     }
 

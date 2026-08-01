@@ -26,13 +26,7 @@ struct StatusIsland: View {
 
             IslandContainer {
                 HStack(spacing: 9) {
-                    SFIcon(
-                        systemName: batterySymbol,
-                        size: 11,
-                        color: battery.isCharging || battery.percentage > 20
-                            ? ZogTheme.accentGreen
-                            : Color.orange
-                    )
+                    batteryIcon
                     SFIcon(
                         systemName: network.isWiFiConnected ? "wifi" : "wifi.slash",
                         size: 10,
@@ -53,6 +47,20 @@ struct StatusIsland: View {
         case 25..<50: return "battery.50"
         case 10..<25: return "battery.25"
         default: return "battery.0"
+        }
+    }
+
+    private var batteryIcon: some View {
+        if battery.isPresent {
+            SFIcon(
+                systemName: batterySymbol,
+                size: 11,
+                color: battery.isCharging || battery.percentage > 20
+                    ? ZogTheme.accentGreen
+                    : Color.orange
+            )
+        } else {
+            SFIcon(systemName: "battery.0", size: 12, color: ZogTheme.foregroundDim)
         }
     }
 }

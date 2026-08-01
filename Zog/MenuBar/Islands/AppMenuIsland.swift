@@ -30,11 +30,16 @@ struct AppMenuIsland: View {
     }
 
     private func triggerMenu(named title: String) {
+        // Escape backslashes and double quotes to prevent AppleScript injection
+        let escapedTitle = title
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+
         var error: NSDictionary?
         NSAppleScript(source: """
         tell application "System Events"
             tell (first process whose frontmost is true)
-                click menu bar item "\(title)" of menu bar 1
+                click menu bar item "\(escapedTitle)" of menu bar 1
             end tell
         end tell
         """)?.executeAndReturnError(&error)
