@@ -1,87 +1,78 @@
 import AppKit
 import SwiftUI
 
-/// Main vertical dock pill — geometric glyphs only (refs 1 & 4).
-/// Moon / check live in separate circular panels managed by `DockController`.
+/// Vertical dock replacement: pinned apps + running apps + workspace dots.
+/// Moon / check FABs live in separate circular panels managed by `DockController`.
 struct VerticalDockView: View {
     @ObservedObject var workspaces: WorkspaceService
     @ObservedObject var dockApps: DockAppsService
 
+    /// Caps so the dock never outgrows the screen.
+    private let maxPinned = 6
+    private let maxRunning = 8
     private let shownSpaces = 3
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Header: cube + 3x3 grid + separator
-            VStack(spacing: 11) {
-                Button(action: openLaunchpad) { CubeMark() }
-                    .buttonStyle(.plain)
-                    .help("Launchpad")
+        VStack(spacing: 6) {
+            // Pinned apps (always shown if installed on the system)
+            appsSection(
+                title: nil,
+                apps: dockApps.pinned.prefix(maxPinned).map { $0 }
+            )
 
-                Button(action: openLaunchpad) {
-                    GeoGrid(cols: 3, rows: 3, cell: 2, gap: 2)
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.top, 13)
-
-            MicroDot().padding(.vertical, 9)
-
-            // Two four-dot clusters (ref 1)
-            VStack(spacing: 8) {
-                GeoCluster()
-                GeoCluster()
+            if !runningApps.isEmpty {
+                dockSeparator
+                appsSection(title: nil, apps: runningApps)
             }
 
-            MicroDot().padding(.vertical, 5)
+            dockSeparator
 
-            // Workspace dots, each separated by a tiny micro-dot (ref 1)
-            VStack(spacing: 5) {
-                ForEach(Array(workspaces.spaces.prefix(shownSpaces).enumerated()), id: \.element.id) { index, space in
+            // Workspace dots
+            HStack(spacing: 5) {
+                ForEach(Array(workspaces.spaces.prefix(shownSpaces).enumerated()), id: \.element.id) { _, space in
                     Button { workspaces.focus(space: space.id) } label: {
-                        DotIndicator(
-                            color: color(for: space),
-                            size: space.isFocused ? 6.5 : 5.5,
-                            isActive: space.isFocused || space.hasWindows
-                        )
+                        Circle()
+                            .fill(color(for: space))
+                            .frame(width: space.isFocused ? 7 : 5.5, height: space.isFocused ? 7 : 5.5)
+                            .opacity(space.isFocused || space.hasWindows ? 1 : 0.35)
                     }
                     .buttonStyle(.plain)
                     .help("Desktop \(space.id)")
-
-                    if index < min(workspaces.spaces.count, shownSpaces) - 1 {
-                        MicroDot()
-                    }
                 }
             }
-
-            MicroDot().padding(.vertical, 9)
-
-            // Geometric glyphs (ref 4) — wired to apps
-            VStack(spacing: 10) {
-                Button { activate("com.apple.finder") } label: { GeoRect() }
-                    .buttonStyle(.plain).help("Finder")
-
-                Button { openLaunchpad() } label: {
-                    GeoGrid(cols: 2, rows: 2, cell: 2.5, gap: 2)
-                }
-                .buttonStyle(.plain).help("Apps")
-
-                GeoPillToggle()
-
-                ForEach(Array(dockApps.apps.filter(\.isRunning).prefix(2).enumerated()), id: \.element.id) { _, app in
-                    Button { dockApps.launchOrActivate(app) } label: {
-                        GeoBlock(opacity: app.isFrontmost ? 1 : 0.55)
-                    }
-                    .buttonStyle(.plain)
-                    .help(app.name)
-                }
-            }
-            .padding(.bottom, 13)
         }
+        .padding(.vertical, 10)
         .frame(width: ZogTheme.dockWidth)
         .background(dockChrome)
     }
 
-    // MARK: Chrome
+    // MARK: - App sections
+
+    @ViewBuilder
+    private func appsSection(title: String?, apps: [DockAppsService.DockApp]) -> some View {
+        VStack(spacing: 6) {
+            ForEach(apps, id: \.id) { app in
+                DockAppButton(app: app) { dockApps.launchOrActivate(app) }
+            }
+        }
+    }
+
+    private var runningApps: [DockAppsService.DockApp] {
+        let pinnedIDs = Set(dockApps.pinned.map(\.id))
+        return dockApps.apps
+            .filter { $0.isRunning && !pinnedIDs.contains($0.id) }
+            .prefix(maxRunning)
+            .map { $0 }
+    }
+
+    private var dockSeparator: some View {
+        Rectangle()
+            .fill(Color.white.opacity(0.08))
+            .frame(width: ZogTheme.dockWidth - 20, height: 0.5)
+            .padding(.vertical, 2)
+    }
+
+    // MARK: - Chrome
 
     private var dockChrome: some View {
         Capsule(style: .continuous)
@@ -102,7 +93,7 @@ struct VerticalDockView: View {
             .shadow(color: .black.opacity(0.22), radius: 14, y: 4)
     }
 
-    // MARK: Actions
+    // MARK: - Actions
 
     private func color(for space: WorkspaceService.Space) -> Color {
         switch workspaces.color(for: space) {
@@ -111,21 +102,51 @@ struct VerticalDockView: View {
         case .cyan:   return ZogTheme.foregroundDim
         }
     }
+}
 
-    private func activate(_ bundleID: String) {
-        if let app = dockApps.apps.first(where: { $0.id == bundleID }) {
-            dockApps.launchOrActivate(app)
-        } else if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
-            NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
+// MARK: - Single dock-app button
+
+private struct DockAppButton: View {
+    let app: DockAppsService.DockApp
+    let action: () -> Void
+
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            ZStack(alignment: .bottom) {
+                AppIconView(image: app.icon, size: 24)
+                    .opacity(app.isRunning ? 1 : 0.55)
+                    .padding(4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .fill(Color.white.opacity(isHovered ? 0.12 : 0))
+                    )
+                    .scaleEffect(isHovered ? 1.08 : 1)
+
+                // Focused-app indicator dot
+                if app.isFrontmost {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 3, height: 3)
+                        .offset(y: 1)
+                } else if app.isRunning {
+                    Circle()
+                        .fill(Color.white.opacity(0.55))
+                        .frame(width: 2.5, height: 2.5)
+                        .offset(y: 1)
+                }
+            }
         }
-    }
-
-    private func openLaunchpad() {
-        NSWorkspace.shared.launchApplication("Launchpad")
+        .buttonStyle(.plain)
+        .help(app.name)
+        .onHover { hovering in
+            withAnimation(ZogTheme.hoverSpring) { isHovered = hovering }
+        }
     }
 }
 
-// MARK: - Circular action buttons (separate from dock — ref 1)
+// MARK: - Circular action buttons (separate from dock — moon / check)
 
 struct DockMoonButton: View {
     var body: some View {

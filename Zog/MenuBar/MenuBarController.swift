@@ -3,7 +3,8 @@ import SwiftUI
 import Combine
 
 /// Orchestrates the floating top islands — Apple, App menu, Media (center),
-/// Status cluster, and Clock — matching the modular SketchyBar island layout.
+/// Status cluster, and Clock — and the full-width shield that blocks the
+/// native menu bar from reacting to the cursor.
 @MainActor
 final class MenuBarController {
     private let services: ServiceContainer
@@ -11,9 +12,15 @@ final class MenuBarController {
     private var leftPanel: PanelWindow<AnyView>?
     private var centerPanel: PanelWindow<AnyView>?
     private var rightPanel: PanelWindow<AnyView>?
+    private var shieldPanel: NSPanel?
 
     private var cancellables = Set<AnyCancellable>()
     private var sizeObserver: NSObjectProtocol?
+
+    /// Height of the shield strip. Slightly taller than the islands
+    /// themselves so it catches the cursor before it reaches the native
+    /// menu bar's "show on hover" zone.
+    private let shieldHeight: CGFloat = 36
 
     init(services: ServiceContainer) {
         self.services = services
@@ -29,12 +36,14 @@ final class MenuBarController {
         leftPanel?.orderOut(nil)
         centerPanel?.orderOut(nil)
         rightPanel?.orderOut(nil)
+        shieldPanel?.orderOut(nil)
     }
 
     func reposition() {
         layoutLeft()
         layoutCenter()
         layoutRight()
+        layoutShield()
     }
 
     // MARK: - Panels
@@ -61,9 +70,15 @@ final class MenuBarController {
             style: .island
         )
 
+        // Full-width transparent shield above the native menu bar.
+        shieldPanel = makeShieldPanel(
+            frame: NSRect(x: 0, y: 0, width: 100, height: shieldHeight)
+        )
+
         leftPanel?.orderFrontRegardless()
         centerPanel?.orderFrontRegardless()
         rightPanel?.orderFrontRegardless()
+        shieldPanel?.orderFrontRegardless()
     }
 
     private var leftCluster: some View {
@@ -125,6 +140,18 @@ final class MenuBarController {
             trailingOffset: ScreenLayout.dockClearance
         )
         panel.setFrame(rect, display: true)
+    }
+
+    private func layoutShield() {
+        guard let shield = shieldPanel else { return }
+        let screen = ScreenLayout.mainScreen
+        let frame = NSRect(
+            x: screen.frame.minX,
+            y: screen.frame.maxY - shieldHeight,
+            width: screen.frame.width,
+            height: shieldHeight
+        )
+        shield.setFrame(frame, display: true)
     }
 
     private func fittingSize<V: View>(for view: V, fallback: NSSize) -> NSSize {

@@ -18,8 +18,12 @@ enum SystemChrome {
         let autohideTimeModifier: Double?
     }
 
-    /// Hides the native dock (autohide) and the menu bar. Schedules the
-    /// dock restart on a background queue so we don't block launch.
+    /// Hides the native dock (autohide) and the menu bar.
+    ///
+    /// `_HIHideMenuBar` is the macOS 14+ private preference for "Automatically
+    /// hide and show the menu bar". Writing to it doesn't take effect until
+    /// `SystemUIServer` re-reads its prefs, so we restart it. macOS relaunches
+    /// it automatically.
     static func hideNativeChrome() {
         snapshot = DockSnapshot(
             autohide: defaultsBool(domain: dockDomain, key: "autohide"),
@@ -31,8 +35,6 @@ enum SystemChrome {
         runDefaults(["write", dockDomain, "autohide-delay", "-float", "0"])
         runDefaults(["write", dockDomain, "autohide-time-modifier", "-float", "0"])
 
-        // Hide the system menu bar automatically (macOS Sonoma+ Desktop & Dock
-        // setting). Falls back silently on older systems.
         runDefaults(["write", "NSGlobalDomain", "_HIHideMenuBar", "-bool", "true"])
         DistributedNotificationCenter.default().postNotificationName(
             NSNotification.Name("AppleInterfaceThemeChangedNotification"),
@@ -41,11 +43,17 @@ enum SystemChrome {
             deliverImmediately: true
         )
 
-        // Restarting Dock via `killall` is the only reliable way to pick up
-        // the new autohide setting; do it off the launch path so the menu
-        // bar islands appear as fast as possible.
+        // Restarting Dock + SystemUIServer is the only reliable way to pick up
+        // the new settings; do it off the launch path so the menu bar islands
+        // appear as fast as possible.
         DispatchQueue.global(qos: .userInitiated).async {
             restartDock()
+            // SystemUIServer holds the menu bar; restart it so it re-reads
+            // `_HIHideMenuBar` from defaults.
+            let task = Process()
+            task.executableURL = URL(fileURLWithPath: SystemChrome.dockBinary)
+            task.arguments = ["SystemUIServer"]
+            try? task.run()
         }
     }
 
@@ -64,6 +72,10 @@ enum SystemChrome {
         }
         runDefaults(["write", "NSGlobalDomain", "_HIHideMenuBar", "-bool", "false"])
         restartDock()
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: dockBinary)
+        task.arguments = ["SystemUIServer"]
+        try? task.run()
     }
 
     private static func restartDock() {

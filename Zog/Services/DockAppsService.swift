@@ -14,12 +14,13 @@ final class DockAppsService: ObservableObject {
     }
 
     @Published private(set) var apps: [DockApp] = []
+    /// Pinned apps always shown in the dock, regardless of running state.
+    @Published private(set) var pinned: [DockApp] = []
 
     private var observers: [NSObjectProtocol] = []
     private var timer: Timer?
 
-    /// Preferred pinned apps for the geometric dock slots.
-    /// (Not related to the left menu-bar island — that follows the frontmost app.)
+    /// Preferred pinned apps for the dock.
     private let pinnedBundleIDs = [
         "com.apple.finder",
         "com.apple.Safari",
@@ -75,33 +76,35 @@ final class DockAppsService: ObservableObject {
         }
         let frontID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
 
-        // Index previous results so we can preserve already-loaded icons
-        // instead of re-asking NSWorkspace for them every 5 seconds.
-        let previousByID = Dictionary(uniqueKeysWithValues: apps.map { ($0.id, $0) })
+        // Index previous results so we preserve already-loaded icons.
+        let previousByID = Dictionary(uniqueKeysWithValues:
+            (apps + pinned).map { ($0.id, $0) }
+        )
 
-        var result: [DockApp] = []
-        var seen = Set<String>()
-
+        // Pinned apps: always present, marked as running if currently open.
+        var pinnedApps: [DockApp] = []
         for bid in pinnedBundleIDs {
-            if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bid) {
-                let runningApp = running.first { $0.bundleIdentifier == bid }
-                let icon = previousByID[bid]?.icon ?? NSWorkspace.shared.icon(forFile: url.path)
-                result.append(DockApp(
-                    id: bid,
-                    name: FileManager.default.displayName(atPath: url.path),
-                    bundleURL: url,
-                    icon: icon,
-                    isRunning: runningApp != nil,
-                    isFrontmost: bid == frontID
-                ))
-                seen.insert(bid)
-            }
+            guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bid) else { continue }
+            let runningApp = running.first { $0.bundleIdentifier == bid }
+            let icon = previousByID[bid]?.icon ?? NSWorkspace.shared.icon(forFile: url.path)
+            pinnedApps.append(DockApp(
+                id: bid,
+                name: FileManager.default.displayName(atPath: url.path),
+                bundleURL: url,
+                icon: icon,
+                isRunning: runningApp != nil,
+                isFrontmost: bid == frontID
+            ))
         }
+        if pinnedApps != pinned { pinned = pinnedApps }
 
+        // Running apps that aren't pinned.
+        let pinnedIDs = Set(pinnedApps.map(\.id))
+        var runningApps: [DockApp] = []
         for app in running {
-            guard let bid = app.bundleIdentifier, !seen.contains(bid) else { continue }
+            guard let bid = app.bundleIdentifier, !pinnedIDs.contains(bid) else { continue }
             let icon = previousByID[bid]?.icon ?? app.icon
-            result.append(DockApp(
+            runningApps.append(DockApp(
                 id: bid,
                 name: app.localizedName ?? bid,
                 bundleURL: app.bundleURL,
@@ -109,10 +112,8 @@ final class DockAppsService: ObservableObject {
                 isRunning: true,
                 isFrontmost: bid == frontID
             ))
-            seen.insert(bid)
         }
-
-        let next = Array(result.prefix(10))
+        let next = Array(runningApps.prefix(12))
         if next != apps { apps = next }
     }
 }

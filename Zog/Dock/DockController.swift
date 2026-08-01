@@ -81,12 +81,18 @@ final class DockController {
             workspaces: services.workspaces,
             dockApps: services.dockApps
         )
-        .padding(4)
+        .padding(.horizontal, 4)
     }
 
     private func estimatedDockHeight() -> CGFloat {
-        let spaces = CGFloat(min(max(services.workspaces.spaces.count, 1), 3))
-        return 55 + 40 + spaces * 18 + 100
+        let pinned = services.dockApps.pinned.count
+        let running = services.dockApps.apps.count
+        let totalApps = pinned + (running > 0 ? running + 1 : 0) // +1 for separator
+        let appsH = CGFloat(max(0, totalApps)) * 36
+        let separatorH: CGFloat = 12
+        let workspaceH: CGFloat = 30
+        let chrome: CGFloat = 26
+        return appsH + separatorH + workspaceH + chrome
     }
 
     private func observe() {
