@@ -25,6 +25,16 @@ macOS 14+, Xcode 15+:
 open Zog.xcodeproj
 ```
 
+Or from the command line:
+
+```bash
+xcodebuild -project Zog.xcodeproj -scheme Zog -configuration Debug build
+```
+
+CI: `.github/workflows/build.yml` builds Debug + Release on every push/PR
+(runs on `macos-14`) and publishes a `Zog-<version>-macos.zip` (with
+`sha256`) as a GitHub release asset on `v*` tag pushes.
+
 Run **Zog**. Grant **Accessibility** + **Automation** (needed to read/click the frontmost app’s menus). Optional: [yabai](https://github.com/koekeishiya/yabai) for Spaces.
 
 On launch, native Dock / menu bar are autohidden; quitting restores Dock settings.

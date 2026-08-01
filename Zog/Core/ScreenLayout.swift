@@ -57,4 +57,10 @@ enum ScreenLayout {
         }
         return ZogTheme.screenInset
     }
+
+    /// Horizontal space reserved for the vertical dock so the right-side island
+    /// cluster doesn't slide under it.
+    static var dockClearance: CGFloat {
+        ZogTheme.dockWidth + ZogTheme.screenInset
+    }
 }

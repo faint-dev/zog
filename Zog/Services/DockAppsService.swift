@@ -2,6 +2,7 @@ import AppKit
 import Combine
 import Foundation
 
+@MainActor
 final class DockAppsService: ObservableObject {
     struct DockApp: Identifiable, Equatable {
         let id: String
@@ -31,14 +32,21 @@ final class DockAppsService: ObservableObject {
         refresh()
         let nc = NSWorkspace.shared.notificationCenter
         observers = [
-            nc.addObserver(forName: NSWorkspace.didLaunchApplicationNotification, object: nil, queue: .main) { [weak self] _ in self?.refresh() },
-            nc.addObserver(forName: NSWorkspace.didTerminateApplicationNotification, object: nil, queue: .main) { [weak self] _ in self?.refresh() },
-            nc.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] _ in self?.refresh() }
+            nc.addObserver(forName: NSWorkspace.didLaunchApplicationNotification, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor [weak self] in self?.refresh() }
+            },
+            nc.addObserver(forName: NSWorkspace.didTerminateApplicationNotification, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor [weak self] in self?.refresh() }
+            },
+            nc.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor [weak self] in self?.refresh() }
+            }
         ]
-        timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
-            self?.refresh()
+        let timer = Timer(timeInterval: 5, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in self?.refresh() }
         }
-        if let timer { RunLoop.main.add(timer, forMode: .common) }
+        self.timer = timer
+        RunLoop.main.add(timer, forMode: .common)
     }
 
     func stop() {
@@ -51,9 +59,9 @@ final class DockAppsService: ObservableObject {
     func launchOrActivate(_ app: DockApp) {
         if let url = app.bundleURL {
             NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
-        } else if let bundleID = Optional(app.id) {
+        } else {
             NSWorkspace.shared.launchApplication(
-                withBundleIdentifier: bundleID,
+                withBundleIdentifier: app.id,
                 options: [],
                 additionalEventParamDescriptor: nil,
                 launchIdentifier: nil
@@ -66,13 +74,18 @@ final class DockAppsService: ObservableObject {
             $0.activationPolicy == .regular
         }
         let frontID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+
+        // Index previous results so we can preserve already-loaded icons
+        // instead of re-asking NSWorkspace for them every 5 seconds.
+        let previousByID = Dictionary(uniqueKeysWithValues: apps.map { ($0.id, $0) })
+
         var result: [DockApp] = []
         var seen = Set<String>()
 
         for bid in pinnedBundleIDs {
             if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bid) {
                 let runningApp = running.first { $0.bundleIdentifier == bid }
-                let icon = NSWorkspace.shared.icon(forFile: url.path)
+                let icon = previousByID[bid]?.icon ?? NSWorkspace.shared.icon(forFile: url.path)
                 result.append(DockApp(
                     id: bid,
                     name: FileManager.default.displayName(atPath: url.path),
@@ -87,17 +100,19 @@ final class DockAppsService: ObservableObject {
 
         for app in running {
             guard let bid = app.bundleIdentifier, !seen.contains(bid) else { continue }
+            let icon = previousByID[bid]?.icon ?? app.icon
             result.append(DockApp(
                 id: bid,
                 name: app.localizedName ?? bid,
                 bundleURL: app.bundleURL,
-                icon: app.icon,
+                icon: icon,
                 isRunning: true,
                 isFrontmost: bid == frontID
             ))
             seen.insert(bid)
         }
 
-        apps = Array(result.prefix(10))
+        let next = Array(result.prefix(10))
+        if next != apps { apps = next }
     }
 }

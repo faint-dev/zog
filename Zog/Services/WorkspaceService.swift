@@ -5,6 +5,7 @@ import AppKit
 
 /// Workspace / Space indicators. Integrates with yabai when available,
 /// otherwise falls back to a simple local model.
+@MainActor
 final class WorkspaceService: ObservableObject {
     struct Space: Identifiable, Equatable {
         let id: Int
@@ -12,7 +13,9 @@ final class WorkspaceService: ObservableObject {
         var hasWindows: Bool
     }
 
-    @Published private(set) var spaces: [Space] = (1...5).map { Space(id: $0, isFocused: $0 == 1, hasWindows: $0 <= 2) }
+    @Published private(set) var spaces: [Space] = (1...5).map {
+        Space(id: $0, isFocused: $0 == 1, hasWindows: $0 <= 2)
+    }
     @Published private(set) var usingYabai: Bool = false
 
     private var timer: Timer?
@@ -29,17 +32,18 @@ final class WorkspaceService: ObservableObject {
 
     func start() {
         refresh()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.refresh()
+        let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in self?.refresh() }
         }
-        if let timer { RunLoop.main.add(timer, forMode: .common) }
+        self.timer = timer
+        RunLoop.main.add(timer, forMode: .common)
 
         spaceObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.activeSpaceDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.refresh()
+            Task { @MainActor [weak self] in self?.refresh() }
         }
     }
 
@@ -64,8 +68,8 @@ final class WorkspaceService: ObservableObject {
     private func refresh() {
         if let yabaiSpaces = queryYabaiSpaces() {
             usingYabai = true
-            spaces = yabaiSpaces
-        } else {
+            if yabaiSpaces != spaces { spaces = yabaiSpaces }
+        } else if usingYabai {
             usingYabai = false
         }
     }
@@ -74,8 +78,8 @@ final class WorkspaceService: ObservableObject {
         let paths = ["/opt/homebrew/bin/yabai", "/usr/local/bin/yabai"]
         for path in paths {
             guard FileManager.default.isExecutableFile(atPath: path) else { continue }
-            let output = runCapture(path, arguments: ["-m", "query", "--spaces"])
-            guard let data = output?.data(using: .utf8),
+            guard let output = runCapture(path, arguments: ["-m", "query", "--spaces"]),
+                  let data = output.data(using: .utf8),
                   let json = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]]
             else { continue }
 

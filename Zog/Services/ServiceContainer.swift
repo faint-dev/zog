@@ -2,6 +2,7 @@ import Foundation
 import Combine
 
 /// Shared service locator for the overlay chrome.
+@MainActor
 final class ServiceContainer: ObservableObject {
     static let shared = ServiceContainer()
 

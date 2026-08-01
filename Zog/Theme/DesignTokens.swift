@@ -1,22 +1,32 @@
 import AppKit
 import SwiftUI
 
-/// Tokens tuned to the reference photos: soft glass capsules,
+/// Tokens tuned to `docs/design-preview.html`: soft glass capsules,
 /// slim geometric dock, separate circular action buttons below.
 enum ZogTheme {
+    // MARK: Fills & borders
+
     static let islandFill = Color(nsColor: NSColor(calibratedWhite: 0.11, alpha: 0.72))
     static let dockFill = Color(nsColor: NSColor(calibratedWhite: 0.08, alpha: 0.82))
     static let islandBorder = Color.white.opacity(0.10)
     static let islandBorderHover = Color.white.opacity(0.20)
 
+    // MARK: Foreground
+
     static let foreground = Color.white.opacity(0.94)
     static let foregroundMuted = Color.white.opacity(0.50)
     static let foregroundDim = Color.white.opacity(0.28)
+    static let foregroundGlyph = Color.white.opacity(0.92)
+    static let foregroundGlyphDim = Color.white.opacity(0.55)
+
+    // MARK: Accents
 
     static let accentGreen = Color(red: 0.24, green: 0.81, blue: 0.36)
     static let workspaceYellow = Color(red: 0.94, green: 0.75, blue: 0.26)
     static let workspaceBlue = Color(red: 0.36, green: 0.61, blue: 0.97)
     static let workspaceCyan = Color(red: 0.45, green: 0.84, blue: 0.94)
+
+    // MARK: Geometry
 
     static let islandRadius: CGFloat = 14
     static let appleIslandRadius: CGFloat = 10
@@ -34,15 +44,22 @@ enum ZogTheme {
     static let islandPaddingV: CGFloat = 4
     static let fabGap: CGFloat = 8
 
+    // MARK: Typography
+
     static let clockFont = Font.system(size: 11.5, weight: .medium, design: .monospaced)
     static let menuFont = Font.system(size: 12.5, weight: .regular)
     static let titleFont = Font.system(size: 12, weight: .semibold)
     static let subtitleFont = Font.system(size: 10, weight: .regular)
     static let appNameFont = Font.system(size: 12.5, weight: .medium)
+    static let utilityLetterFont = Font.system(size: 10.5, weight: .bold, design: .rounded)
+
+    // MARK: Animation
 
     static let hoverSpring = Animation.spring(response: 0.28, dampingFraction: 0.84)
     static let appearEase = Animation.easeOut(duration: 0.28)
 }
+
+// MARK: - Island background modifier
 
 struct IslandBackground: ViewModifier {
     var height: CGFloat = ZogTheme.islandHeight

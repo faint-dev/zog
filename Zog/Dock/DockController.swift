@@ -4,6 +4,7 @@ import Combine
 
 /// Manages the vertical dock pill + the two separate circular FABs below it
 /// (moon / check) as in reference 1.
+@MainActor
 final class DockController {
     private let services: ServiceContainer
     private var dockPanel: PanelWindow<AnyView>?
@@ -57,7 +58,6 @@ final class DockController {
         dockRect.origin.y += fabStack / 2
 
         dockPanel?.setFrame(dockRect, display: true)
-        dockPanel?.setRootView(AnyView(dockRoot))
 
         let fabX = dockRect.midX - fab / 2
         let moonFrame = NSRect(
@@ -101,7 +101,7 @@ final class DockController {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.reposition()
+            Task { @MainActor [weak self] in self?.reposition() }
         }
     }
 }

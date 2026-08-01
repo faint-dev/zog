@@ -2,6 +2,7 @@ import Foundation
 import IOKit.ps
 import Combine
 
+@MainActor
 final class BatteryService: ObservableObject {
     @Published private(set) var percentage: Int = 100
     @Published private(set) var isCharging: Bool = false
@@ -11,10 +12,11 @@ final class BatteryService: ObservableObject {
 
     func start() {
         refresh()
-        timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
-            self?.refresh()
+        let timer = Timer(timeInterval: 30, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in self?.refresh() }
         }
-        RunLoop.main.add(timer!, forMode: .common)
+        self.timer = timer
+        RunLoop.main.add(timer, forMode: .common)
     }
 
     func stop() {
@@ -28,14 +30,18 @@ final class BatteryService: ObservableObject {
               let first = sources.first,
               let info = IOPSGetPowerSourceDescription(snapshot, first)?.takeUnretainedValue() as? [String: Any]
         else {
-            isPresent = false
+            if isPresent { isPresent = false }
             return
         }
 
-        isPresent = true
-        percentage = info[kIOPSCurrentCapacityKey] as? Int ?? 100
+        if !isPresent { isPresent = true }
+
+        let newPercentage = info[kIOPSCurrentCapacityKey] as? Int ?? 100
+        if newPercentage != percentage { percentage = newPercentage }
+
         let state = info[kIOPSPowerSourceStateKey] as? String
-        isCharging = state == kIOPSACPowerValue
+        let newCharging = state == kIOPSACPowerValue
             || (info[kIOPSIsChargingKey] as? Bool == true)
+        if newCharging != isCharging { isCharging = newCharging }
     }
 }

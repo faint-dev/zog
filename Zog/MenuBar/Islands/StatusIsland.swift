@@ -7,52 +7,46 @@ struct StatusIsland: View {
 
     var body: some View {
         HStack(spacing: ZogTheme.islandGap) {
-            IslandContainer(compact: true) {
-                SFIcon(systemName: "envelope", size: 10)
+            // Mail pod — single envelope glyph in a square capsule.
+            IslandContainer(cornerRadius: 10, compact: true) {
+                Text("\u{2709}") // ✉
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(ZogTheme.foreground)
+                    .frame(width: 12, height: 12)
             }
             .help("Mail")
 
+            // Utilities pod — bold B, cursor arrow, grid, chevron.
             IslandContainer {
                 HStack(spacing: 9) {
                     Text("B")
-                        .font(.system(size: 10.5, weight: .bold, design: .rounded))
+                        .font(ZogTheme.utilityLetterFont)
                         .foregroundStyle(ZogTheme.foreground)
-                    SFIcon(systemName: "cursorarrow", size: 9, color: ZogTheme.foregroundMuted)
-                    SFIcon(systemName: "square.grid.2x2", size: 10)
-                    SFIcon(systemName: "chevron.down", size: 7, color: ZogTheme.foregroundMuted)
+                    Text("\u{2315}") // ⌝ (cursor/arrow variant)
+                        .font(.system(size: 10, weight: .regular))
+                        .foregroundStyle(ZogTheme.foregroundDim)
+                    Text("\u{25A6}") // ▦ (square with orthogonal crosshatch fill)
+                        .font(.system(size: 10, weight: .regular))
+                        .foregroundStyle(ZogTheme.foreground)
+                    Text("\u{25BE}") // ▾
+                        .font(.system(size: 7, weight: .bold))
+                        .foregroundStyle(ZogTheme.foregroundDim)
                 }
             }
             .help("Utilities")
 
+            // Status pod — custom battery, wifi, speaker glyphs.
             IslandContainer {
                 HStack(spacing: 9) {
-                    SFIcon(
-                        systemName: batterySymbol,
-                        size: 11,
-                        color: battery.isCharging || battery.percentage > 20
-                            ? ZogTheme.accentGreen
-                            : Color.orange
+                    BatteryGlyph(
+                        fillFraction: max(0, min(1, Double(battery.percentage) / 100.0)),
+                        charging: battery.isCharging
                     )
-                    SFIcon(
-                        systemName: network.isWiFiConnected ? "wifi" : "wifi.slash",
-                        size: 10,
-                        color: network.isWiFiConnected ? ZogTheme.foreground : ZogTheme.foregroundDim
-                    )
-                    SFIcon(systemName: "speaker.wave.2.fill", size: 10, color: ZogTheme.foregroundMuted)
+                    WifiGlyph(bars: network.signalBars)
+                    SpeakerGlyph()
                 }
             }
             .help("System")
-        }
-    }
-
-    private var batterySymbol: String {
-        if battery.isCharging { return "battery.100.bolt" }
-        switch battery.percentage {
-        case 75...100: return "battery.100"
-        case 50..<75: return "battery.75"
-        case 25..<50: return "battery.50"
-        case 10..<25: return "battery.25"
-        default: return "battery.0"
         }
     }
 }

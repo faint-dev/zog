@@ -13,10 +13,15 @@ struct MediaIsland: View {
                             if let art = track.artwork {
                                 Image(nsImage: art).resizable().scaledToFill()
                             } else {
-                                ZStack {
-                                    Color.black.opacity(0.45)
-                                    SFIcon(systemName: "music.note", size: 10, color: ZogTheme.foregroundMuted)
-                                }
+                                LinearGradient(
+                                    colors: [Color(white: 0.10), Color(white: 0.18)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                        .strokeBorder(Color.white.opacity(0.08), lineWidth: 0.5)
+                                )
                             }
                         }
                         .frame(width: 24, height: 24)

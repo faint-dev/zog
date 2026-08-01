@@ -4,6 +4,7 @@ import Combine
 
 /// Tracks the frontmost app and its real menu-bar item titles
 /// (the usual File / Edit / … menus for whatever is currently open).
+@MainActor
 final class FrontmostAppService: ObservableObject {
     struct AppInfo: Equatable {
         let name: String
@@ -30,7 +31,9 @@ final class FrontmostAppService: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.refresh()
+            // The notification callback lands on the queue we passed
+            // (`.main`); hop explicitly so MainActor isolation holds.
+            Task { @MainActor [weak self] in self?.refresh() }
         }
     }
 
@@ -62,13 +65,21 @@ final class FrontmostAppService: ObservableObject {
             kAXMenuBarAttribute as CFString,
             &menuBarRef
         )
-        guard barStatus == .success, let menuBar = menuBarRef else {
+        guard barStatus == .success else { return fallbackMenus }
+
+        // The AX API hands back `AnyObject`; the underlying type is
+        // `AXUIElement` (an opaque CF type). Cast safely — if Apple ever
+        // changes the type we don't want to crash with a force-cast.
+        guard let menuBarAny = menuBarRef,
+              CFGetTypeID(menuBarAny as CFTypeRef) == AXUIElementGetTypeID()
+        else {
             return fallbackMenus
         }
+        let menuBar = unsafeBitCast(menuBarAny, to: AXUIElement.self)
 
         var childrenRef: AnyObject?
         let kidsStatus = AXUIElementCopyAttributeValue(
-            menuBar as! AXUIElement,
+            menuBar,
             kAXChildrenAttribute as CFString,
             &childrenRef
         )

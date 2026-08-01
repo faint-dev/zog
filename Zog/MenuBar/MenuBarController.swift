@@ -4,6 +4,7 @@ import Combine
 
 /// Orchestrates the floating top islands — Apple, App menu, Media (center),
 /// Status cluster, and Clock — matching the modular SketchyBar island layout.
+@MainActor
 final class MenuBarController {
     private let services: ServiceContainer
 
@@ -100,34 +101,30 @@ final class MenuBarController {
             height: fitting.height
         )
         panel.setFrame(rect, display: true)
-        panel.setRootView(AnyView(leftCluster))
     }
 
     private func layoutCenter() {
         guard let panel = centerPanel else { return }
         let hasMedia = services.media.track != nil
-        panel.setIsVisible(hasMedia)
-        guard hasMedia else { return }
-
+        guard hasMedia else {
+            panel.orderOut(nil)
+            return
+        }
         let fitting = fittingSize(for: centerCluster, fallback: NSSize(width: 280, height: 52))
         let rect = ScreenLayout.topCenter(width: fitting.width, height: fitting.height)
         panel.setFrame(rect, display: true)
-        panel.setRootView(AnyView(centerCluster))
         panel.orderFrontRegardless()
     }
 
     private func layoutRight() {
         guard let panel = rightPanel else { return }
         let fitting = fittingSize(for: rightCluster, fallback: NSSize(width: 320, height: 40))
-        // Keep clear of the vertical dock on the right
-        let dockClearance = ZogTheme.dockWidth + ZogTheme.screenInset
         let rect = ScreenLayout.topTrailing(
             width: fitting.width,
             height: fitting.height,
-            trailingOffset: dockClearance
+            trailingOffset: ScreenLayout.dockClearance
         )
         panel.setFrame(rect, display: true)
-        panel.setRootView(AnyView(rightCluster))
     }
 
     private func fittingSize<V: View>(for view: V, fallback: NSSize) -> NSSize {
@@ -160,17 +157,7 @@ final class MenuBarController {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.reposition()
-        }
-    }
-}
-
-private extension NSPanel {
-    func setIsVisible(_ visible: Bool) {
-        if visible {
-            orderFrontRegardless()
-        } else {
-            orderOut(nil)
+            Task { @MainActor [weak self] in self?.reposition() }
         }
     }
 }

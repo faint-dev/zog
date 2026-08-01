@@ -2,13 +2,16 @@ import AppKit
 import SwiftUI
 
 /// Main vertical dock pill — geometric glyphs only (refs 1 & 4).
-/// Moon / check live in separate circular panels managed by DockController.
+/// Moon / check live in separate circular panels managed by `DockController`.
 struct VerticalDockView: View {
     @ObservedObject var workspaces: WorkspaceService
     @ObservedObject var dockApps: DockAppsService
 
+    private let shownSpaces = 3
+
     var body: some View {
         VStack(spacing: 0) {
+            // Header: cube + 3x3 grid + separator
             VStack(spacing: 11) {
                 Button(action: openLaunchpad) { CubeMark() }
                     .buttonStyle(.plain)
@@ -21,19 +24,19 @@ struct VerticalDockView: View {
             }
             .padding(.top, 13)
 
-            micro
+            MicroDot().padding(.vertical, 9)
 
-            // Four-dot clusters (ref 1)
+            // Two four-dot clusters (ref 1)
             VStack(spacing: 8) {
                 GeoCluster()
                 GeoCluster()
             }
 
-            micro
+            MicroDot().padding(.vertical, 5)
 
-            // Colored workspace dots
-            VStack(spacing: 7) {
-                ForEach(Array(workspaces.spaces.prefix(3).enumerated()), id: \.element.id) { index, space in
+            // Workspace dots, each separated by a tiny micro-dot (ref 1)
+            VStack(spacing: 5) {
+                ForEach(Array(workspaces.spaces.prefix(shownSpaces).enumerated()), id: \.element.id) { index, space in
                     Button { workspaces.focus(space: space.id) } label: {
                         DotIndicator(
                             color: color(for: space),
@@ -44,15 +47,13 @@ struct VerticalDockView: View {
                     .buttonStyle(.plain)
                     .help("Desktop \(space.id)")
 
-                    if index < min(workspaces.spaces.count, 3) - 1 {
-                        Circle()
-                            .fill(ZogTheme.foreground.opacity(0.2))
-                            .frame(width: 2, height: 2)
+                    if index < min(workspaces.spaces.count, shownSpaces) - 1 {
+                        MicroDot()
                     }
                 }
             }
 
-            micro
+            MicroDot().padding(.vertical, 9)
 
             // Geometric glyphs (ref 4) — wired to apps
             VStack(spacing: 10) {
@@ -80,12 +81,7 @@ struct VerticalDockView: View {
         .background(dockChrome)
     }
 
-    private var micro: some View {
-        Circle()
-            .fill(ZogTheme.foreground.opacity(0.2))
-            .frame(width: 2, height: 2)
-            .padding(.vertical, 9)
-    }
+    // MARK: Chrome
 
     private var dockChrome: some View {
         Capsule(style: .continuous)
@@ -106,11 +102,13 @@ struct VerticalDockView: View {
             .shadow(color: .black.opacity(0.22), radius: 14, y: 4)
     }
 
+    // MARK: Actions
+
     private func color(for space: WorkspaceService.Space) -> Color {
         switch workspaces.color(for: space) {
         case .yellow: return ZogTheme.workspaceYellow
-        case .blue: return ZogTheme.workspaceBlue
-        case .cyan: return ZogTheme.foregroundDim
+        case .blue:   return ZogTheme.workspaceBlue
+        case .cyan:   return ZogTheme.foregroundDim
         }
     }
 
@@ -133,7 +131,6 @@ struct DockMoonButton: View {
     var body: some View {
         Button(action: toggleDarkAppearance) {
             CircularFAB {
-                // Half-moon
                 Circle()
                     .fill(
                         LinearGradient(
@@ -166,14 +163,7 @@ struct DockCheckButton: View {
     var body: some View {
         Button(action: openMissionControl) {
             CircularFAB {
-                ZStack {
-                    Circle()
-                        .stroke(ZogTheme.foreground.opacity(0.9), lineWidth: 1.3)
-                        .frame(width: 15, height: 15)
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 7, weight: .bold))
-                        .foregroundStyle(ZogTheme.foreground)
-                }
+                CheckMarkGlyph()
             }
         }
         .buttonStyle(.plain)

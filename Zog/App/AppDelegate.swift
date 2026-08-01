@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var menuBarController: MenuBarController?
     private var dockController: DockController?
@@ -14,11 +15,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         services.start()
 
-        menuBarController = MenuBarController(services: services)
-        dockController = DockController(services: services)
+        let menuBar = MenuBarController(services: services)
+        let dock = DockController(services: services)
+        menuBarController = menuBar
+        dockController = dock
 
-        menuBarController?.show()
-        dockController?.show()
+        menuBar.show()
+        dock.show()
 
         NSWorkspace.shared.notificationCenter.addObserver(
             self,

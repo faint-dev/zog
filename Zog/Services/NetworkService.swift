@@ -3,6 +3,7 @@ import SystemConfiguration
 import Combine
 import CoreWLAN
 
+@MainActor
 final class NetworkService: ObservableObject {
     @Published private(set) var isWiFiConnected: Bool = false
     @Published private(set) var ssid: String?
@@ -12,10 +13,11 @@ final class NetworkService: ObservableObject {
 
     func start() {
         refresh()
-        timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
-            self?.refresh()
+        let timer = Timer(timeInterval: 5, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in self?.refresh() }
         }
-        RunLoop.main.add(timer!, forMode: .common)
+        self.timer = timer
+        RunLoop.main.add(timer, forMode: .common)
     }
 
     func stop() {
@@ -24,7 +26,7 @@ final class NetworkService: ObservableObject {
     }
 
     private func refresh() {
-        // Reachability via SystemConfiguration
+        // Reachability via SystemConfiguration.
         var zero = sockaddr_in()
         zero.sin_len = UInt8(MemoryLayout.size(ofValue: zero))
         zero.sin_family = sa_family_t(AF_INET)
@@ -34,7 +36,8 @@ final class NetworkService: ObservableObject {
                 SCNetworkReachabilityCreateWithAddress(nil, $0)
             }
         }) else {
-            isWiFiConnected = false
+            if isWiFiConnected { isWiFiConnected = false }
+            if signalBars != 0 { signalBars = 0 }
             return
         }
 
@@ -42,15 +45,20 @@ final class NetworkService: ObservableObject {
         SCNetworkReachabilityGetFlags(reachability, &flags)
         let reachable = flags.contains(.reachable) && !flags.contains(.connectionRequired)
 
-        // Wi-Fi details via CoreWLAN when available
+        // Wi-Fi details via CoreWLAN when available.
         if let interface = CWWiFiClient.shared().interface() {
-            ssid = interface.ssid()
-            isWiFiConnected = reachable && (ssid != nil || interface.powerOn())
+            let newSSID = interface.ssid()
+            if newSSID != ssid { ssid = newSSID }
+            let newConnected = reachable && (newSSID != nil || interface.powerOn())
+            if newConnected != isWiFiConnected { isWiFiConnected = newConnected }
             let rssi = interface.rssiValue()
-            signalBars = bars(from: rssi)
+            let newBars = bars(from: rssi)
+            if newBars != signalBars { signalBars = newBars }
         } else {
-            isWiFiConnected = reachable
-            signalBars = reachable ? 3 : 0
+            let newConnected = reachable
+            if newConnected != isWiFiConnected { isWiFiConnected = newConnected }
+            let newBars = reachable ? 3 : 0
+            if newBars != signalBars { signalBars = newBars }
         }
     }
 

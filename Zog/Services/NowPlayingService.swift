@@ -4,6 +4,7 @@ import Foundation
 
 /// Now Playing via MediaRemote private framework (same approach many
 /// SketchyBar media plugins use). Falls back gracefully if unavailable.
+@MainActor
 final class NowPlayingService: ObservableObject {
     struct Track: Equatable {
         var title: String
@@ -17,15 +18,20 @@ final class NowPlayingService: ObservableObject {
 
     private var timer: Timer?
     private var mediaRemote: MediaRemoteBridge?
+    /// Monotonically increasing token so that an in-flight MediaRemote
+    /// callback from a previous tick can never overwrite a newer result.
+    private var fetchSequence: UInt64 = 0
 
     func start() {
-        mediaRemote = MediaRemoteBridge()
-        isAvailable = mediaRemote?.isLoaded == true
+        let bridge = MediaRemoteBridge()
+        mediaRemote = bridge
+        isAvailable = bridge.isLoaded
         refresh()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in
-            self?.refresh()
+        let timer = Timer(timeInterval: 1.5, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in self?.refresh() }
         }
-        RunLoop.main.add(timer!, forMode: .common)
+        self.timer = timer
+        RunLoop.main.add(timer, forMode: .common)
     }
 
     func stop() {
@@ -34,22 +40,28 @@ final class NowPlayingService: ObservableObject {
     }
 
     func playPause() { mediaRemote?.togglePlayPause() }
-    func next() { mediaRemote?.next() }
-    func previous() { mediaRemote?.previous() }
+    func next()      { mediaRemote?.next() }
+    func previous()  { mediaRemote?.previous() }
 
     private func refresh() {
+        fetchSequence &+= 1
+        let token = fetchSequence
         mediaRemote?.fetchNowPlaying { [weak self] info in
             DispatchQueue.main.async {
+                guard let self else { return }
+                // Drop any callback that has been superseded by a newer fetch.
+                guard token == self.fetchSequence else { return }
                 guard let info else {
-                    self?.track = nil
+                    if self.track != nil { self.track = nil }
                     return
                 }
-                self?.track = Track(
+                let newTrack = Track(
                     title: info.title.isEmpty ? "Not Playing" : info.title,
                     artist: info.artist,
                     artwork: info.artwork,
                     isPlaying: info.isPlaying
                 )
+                if newTrack != self.track { self.track = newTrack }
             }
         }
     }
