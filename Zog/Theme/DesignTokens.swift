@@ -1,49 +1,47 @@
 import AppKit
 import SwiftUI
 
-/// Tokens taken directly from the reference screenshots:
-/// dark translucent capsules, ~12pt bezel inset, geometric dock glyphs.
+/// Tokens tuned to the reference photos: soft glass capsules,
+/// slim geometric dock, separate circular action buttons below.
 enum ZogTheme {
-    // Surfaces — near-black translucent (refs ≈ #1A1A1A)
-    static let islandFill = Color(nsColor: NSColor(calibratedWhite: 0.09, alpha: 0.82))
-    static let dockFill = Color(nsColor: NSColor(calibratedWhite: 0.05, alpha: 0.94))
-    static let islandBorder = Color.white.opacity(0.06)
-    static let islandBorderHover = Color.white.opacity(0.18)
+    static let islandFill = Color(nsColor: NSColor(calibratedWhite: 0.11, alpha: 0.72))
+    static let dockFill = Color(nsColor: NSColor(calibratedWhite: 0.08, alpha: 0.82))
+    static let islandBorder = Color.white.opacity(0.10)
+    static let islandBorderHover = Color.white.opacity(0.20)
 
-    static let foreground = Color.white.opacity(0.95)
-    static let foregroundMuted = Color.white.opacity(0.55)
+    static let foreground = Color.white.opacity(0.94)
+    static let foregroundMuted = Color.white.opacity(0.50)
     static let foregroundDim = Color.white.opacity(0.28)
 
-    // Accents from refs: battery green, workspace yellow/blue/cyan
-    static let accentGreen = Color(red: 0.32, green: 0.82, blue: 0.42)
-    static let workspaceYellow = Color(red: 0.96, green: 0.80, blue: 0.30)
-    static let workspaceBlue = Color(red: 0.38, green: 0.62, blue: 0.98)
-    static let workspaceCyan = Color(red: 0.48, green: 0.86, blue: 0.96)
+    static let accentGreen = Color(red: 0.24, green: 0.81, blue: 0.36)
+    static let workspaceYellow = Color(red: 0.94, green: 0.75, blue: 0.26)
+    static let workspaceBlue = Color(red: 0.36, green: 0.61, blue: 0.97)
+    static let workspaceCyan = Color(red: 0.45, green: 0.84, blue: 0.94)
 
-    // Geometry — continuous rounded pods, not sharp cards
-    static let islandRadius: CGFloat = 12
+    static let islandRadius: CGFloat = 14
     static let appleIslandRadius: CGFloat = 10
-    static let mediaRadius: CGFloat = 14
-    static let dockRadius: CGFloat = 22
+    static let mediaRadius: CGFloat = 16
+    static let dockRadius: CGFloat = 20
+    static let fabSize: CGFloat = 36
 
-    static let islandHeight: CGFloat = 30
-    static let mediaIslandHeight: CGFloat = 42
-    /// Slim vertical dock from refs (~40–48pt)
-    static let dockWidth: CGFloat = 44
+    static let islandHeight: CGFloat = 28
+    static let mediaIslandHeight: CGFloat = 40
+    static let dockWidth: CGFloat = 40
 
     static let screenInset: CGFloat = 14
     static let islandGap: CGFloat = 6
-    static let islandPaddingH: CGFloat = 11
-    static let islandPaddingV: CGFloat = 5
+    static let islandPaddingH: CGFloat = 12
+    static let islandPaddingV: CGFloat = 4
+    static let fabGap: CGFloat = 8
 
-    static let clockFont = Font.system(size: 12, weight: .medium, design: .monospaced)
-    static let menuFont = Font.system(size: 13, weight: .regular)
-    static let titleFont = Font.system(size: 13, weight: .semibold)
-    static let subtitleFont = Font.system(size: 11, weight: .regular)
-    static let appNameFont = Font.system(size: 13, weight: .medium)
+    static let clockFont = Font.system(size: 11.5, weight: .medium, design: .monospaced)
+    static let menuFont = Font.system(size: 12.5, weight: .regular)
+    static let titleFont = Font.system(size: 12, weight: .semibold)
+    static let subtitleFont = Font.system(size: 10, weight: .regular)
+    static let appNameFont = Font.system(size: 12.5, weight: .medium)
 
-    static let hoverSpring = Animation.spring(response: 0.26, dampingFraction: 0.82)
-    static let appearEase = Animation.easeOut(duration: 0.3)
+    static let hoverSpring = Animation.spring(response: 0.28, dampingFraction: 0.84)
+    static let appearEase = Animation.easeOut(duration: 0.28)
 }
 
 struct IslandBackground: ViewModifier {
@@ -51,27 +49,37 @@ struct IslandBackground: ViewModifier {
     var isHovered: Bool = false
     var cornerRadius: CGFloat = ZogTheme.islandRadius
     var compact: Bool = false
+    var fill: Color = ZogTheme.islandFill
 
     func body(content: Content) -> some View {
         content
-            .padding(.horizontal, compact ? 9 : ZogTheme.islandPaddingH)
+            .padding(.horizontal, compact ? 8 : ZogTheme.islandPaddingH)
             .padding(.vertical, ZogTheme.islandPaddingV)
             .frame(minHeight: height)
             .frame(height: height)
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .fill(.ultraThinMaterial)
+                    .environment(\.colorScheme, .dark)
                     .background(
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .fill(ZogTheme.islandFill)
+                            .fill(fill)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .stroke(
-                                isHovered ? ZogTheme.islandBorderHover : ZogTheme.islandBorder,
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(isHovered ? 0.22 : 0.12),
+                                        Color.white.opacity(0.04)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
                                 lineWidth: 0.5
                             )
                     )
+                    .shadow(color: .black.opacity(0.18), radius: 10, y: 4)
             )
             .animation(ZogTheme.hoverSpring, value: isHovered)
     }
@@ -82,13 +90,15 @@ extension View {
         height: CGFloat = ZogTheme.islandHeight,
         isHovered: Bool = false,
         cornerRadius: CGFloat = ZogTheme.islandRadius,
-        compact: Bool = false
+        compact: Bool = false,
+        fill: Color = ZogTheme.islandFill
     ) -> some View {
         modifier(IslandBackground(
             height: height,
             isHovered: isHovered,
             cornerRadius: cornerRadius,
-            compact: compact
+            compact: compact,
+            fill: fill
         ))
     }
 }

@@ -1,26 +1,20 @@
 import AppKit
 import SwiftUI
 
-/// Far-left Apple logo pod — small, nearly square (reference close-up).
 struct AppleIsland: View {
     var body: some View {
         IslandContainer(cornerRadius: ZogTheme.appleIslandRadius, compact: true) {
             Image(systemName: "apple.logo")
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(ZogTheme.foreground)
-                .frame(width: 14, height: 14)
+                .frame(width: 12, height: 12)
         }
         .help("Apple")
-        .onTapGesture { openAppleMenu() }
-    }
-
-    private func openAppleMenu() {
-        let script = """
-        tell application "System Events"
-            click menu bar item 1 of menu bar 1
-        end tell
-        """
-        var error: NSDictionary?
-        NSAppleScript(source: script)?.executeAndReturnError(&error)
+        .onTapGesture {
+            var error: NSDictionary?
+            NSAppleScript(source: """
+            tell application "System Events" to click menu bar item 1 of menu bar 1
+            """)?.executeAndReturnError(&error)
+        }
     }
 }
