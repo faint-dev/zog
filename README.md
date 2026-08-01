@@ -1,26 +1,21 @@
 # Zog
 
-Swift/SwiftUI macOS chrome replacement that recreates the floating-island menu bar and geometric vertical dock from the provided reference screenshots, using the same overlay approach as [SketchyBar](https://github.com/FelixKratz/SketchyBar).
+Swift/SwiftUI macOS chrome replacement: floating menu-bar islands + a vertical dock, in the style of the reference screenshots / [SketchyBar](https://github.com/FelixKratz/SketchyBar).
 
-## Reference layout (matched)
+## Layout
 
-**Top — discrete floating capsules** (not a continuous bar):
+**Top islands** (replace the system menu bar):
 
-| Position | Content |
+| | |
 |---|---|
-| Far left | Apple mark alone in a small near-square pod |
-| Left | App icon + name + File / Edit / View / Window / Help |
-| Center | Media: artwork · title · artist · ⏮ ▶ ⏭ |
-| Right | Envelope · utilities (B / cursor / grid / ▾) · battery+wifi+speaker · clock `dd/MM HH:mm` |
+| Apple pod | System Apple menu |
+| App pod | **Currently frontmost app** — icon, name, and that app’s normal menu-bar items (File / Edit / …), read live via Accessibility |
+| Media | Now Playing when something is playing |
+| Status + clock | Mail / utilities / battery · wifi · volume / `dd/MM HH:mm` |
 
-**Right — slim vertical dock** (refs 1 & 4):
+**Right side** = custom **Dock replacement** (geometric glyphs, workspace dots, circular action buttons below). Not part of the menu bar.
 
-- Cube mark + 3×3 dot grid  
-- Colored workspace dots (yellow / blue / cyan) with micro dividers  
-- Geometric glyphs (rects, 2×2 grid, pill toggle, blocks, globe) — **not** colorful app icons  
-- Half-moon appearance + checkmark · minute numeral  
-
-See [`docs/design-preview.html`](docs/design-preview.html) for a static recreation of this layout.
+`Cursor Nightly` in the design preview is just an example of whatever app happens to be focused.
 
 ## Build
 
@@ -30,12 +25,6 @@ macOS 14+, Xcode 15+:
 open Zog.xcodeproj
 ```
 
-Run the **Zog** scheme. Grant Accessibility + Automation when prompted. Optional: [yabai](https://github.com/koekeishiya/yabai) for live Spaces.
+Run **Zog**. Grant **Accessibility** + **Automation** (needed to read/click the frontmost app’s menus). Optional: [yabai](https://github.com/koekeishiya/yabai) for Spaces.
 
-On launch Zog autohides the native Dock / menu bar; quitting restores prior Dock settings.
-
-## Stack
-
-- Borderless `NSPanel` overlays at status/dock window levels  
-- SwiftUI island views + AppKit layout  
-- Services: clock, battery (IOKit), Wi‑Fi (CoreWLAN), Now Playing (MediaRemote), workspaces (yabai), apps  
+On launch, native Dock / menu bar are autohidden; quitting restores Dock settings.

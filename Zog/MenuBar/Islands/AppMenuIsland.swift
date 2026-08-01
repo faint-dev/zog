@@ -1,9 +1,10 @@
 import AppKit
 import SwiftUI
 
+/// Frontmost-app island: icon + name of whatever is active, then that app's
+/// normal menu-bar items (File / Edit / … — read live via Accessibility).
 struct AppMenuIsland: View {
     @ObservedObject var frontmost: FrontmostAppService
-    private let menus = ["File", "Edit", "View", "Window", "Help"]
 
     var body: some View {
         IslandContainer {
@@ -16,7 +17,7 @@ struct AppMenuIsland: View {
                     .lineLimit(1)
 
                 HStack(spacing: 11) {
-                    ForEach(menus, id: \.self) { title in
+                    ForEach(frontmost.current.menuTitles, id: \.self) { title in
                         Text(title)
                             .font(ZogTheme.menuFont)
                             .foregroundStyle(ZogTheme.foreground.opacity(0.88))

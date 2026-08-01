@@ -17,13 +17,13 @@ final class DockAppsService: ObservableObject {
     private var observers: [NSObjectProtocol] = []
     private var timer: Timer?
 
-    /// Preferred pinned apps (bundle IDs). Falls back to running apps + Finder.
+    /// Preferred pinned apps for the geometric dock slots.
+    /// (Not related to the left menu-bar island — that follows the frontmost app.)
     private let pinnedBundleIDs = [
         "com.apple.finder",
         "com.apple.Safari",
         "com.apple.Terminal",
         "com.apple.Music",
-        "com.todesktop.230313mzl4w4u92", // Cursor (common)
         "com.apple.systempreferences"
     ]
 

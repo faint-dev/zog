@@ -25,8 +25,10 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Zog uses AppleScript to trigger system menus and appearance toggles.</string>
+	<string>Zog uses AppleScript to open the frontmost app's menu bar items.</string>
 	<key>NSSystemAdministrationUsageDescription</key>
 	<string>Zog adjusts Dock and menu bar visibility to act as a chrome replacement.</string>
+	<key>NSAccessibilityUsageDescription</key>
+	<string>Zog reads the frontmost app's menu bar titles to show them in the app island.</string>
 </dict>
 </plist>
