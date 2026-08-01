@@ -19,11 +19,6 @@ enum SystemChrome {
     }
 
     /// Hides the native dock (autohide) and the menu bar.
-    ///
-    /// `_HIHideMenuBar` is the macOS 14+ private preference for "Automatically
-    /// hide and show the menu bar". Writing to it doesn't take effect until
-    /// `SystemUIServer` re-reads its prefs, so we restart it. macOS relaunches
-    /// it automatically.
     static func hideNativeChrome() {
         snapshot = DockSnapshot(
             autohide: defaultsBool(domain: dockDomain, key: "autohide"),
@@ -35,6 +30,11 @@ enum SystemChrome {
         runDefaults(["write", dockDomain, "autohide-delay", "-float", "0"])
         runDefaults(["write", dockDomain, "autohide-time-modifier", "-float", "0"])
 
+        // Tell the running NSMenuBarManager to hide itself immediately via
+        // the private AppKit SPI. `NSMenuBarManager` isn't in the public
+        // SDK; we look it up dynamically so the linker is happy.
+        setMenuBarVisible(false)
+
         runDefaults(["write", "NSGlobalDomain", "_HIHideMenuBar", "-bool", "true"])
         DistributedNotificationCenter.default().postNotificationName(
             NSNotification.Name("AppleInterfaceThemeChangedNotification"),
@@ -43,17 +43,25 @@ enum SystemChrome {
             deliverImmediately: true
         )
 
-        // Restarting Dock + SystemUIServer is the only reliable way to pick up
-        // the new settings; do it off the launch path so the menu bar islands
-        // appear as fast as possible.
+        // Restarting Dock + cfprefsd + SystemUIServer is the only reliable
+        // way to pick up the new settings. Do it off the launch path so the
+        // menu bar islands appear as fast as possible.
         DispatchQueue.global(qos: .userInitiated).async {
+            // Flush the prefs cache so the new _HIHideMenuBar value is read
+            // when SystemUIServer relaunches.
+            let cfprefsd = Process()
+            cfprefsd.executableURL = URL(fileURLWithPath: SystemChrome.dockBinary)
+            cfprefsd.arguments = ["cfprefsd"]
+            try? cfprefsd.run()
+
             restartDock()
+
             // SystemUIServer holds the menu bar; restart it so it re-reads
-            // `_HIHideMenuBar` from defaults.
-            let task = Process()
-            task.executableURL = URL(fileURLWithPath: SystemChrome.dockBinary)
-            task.arguments = ["SystemUIServer"]
-            try? task.run()
+            // `_HIHideMenuBar` from defaults. launchd will bring it back.
+            let systemUI = Process()
+            systemUI.executableURL = URL(fileURLWithPath: SystemChrome.dockBinary)
+            systemUI.arguments = ["SystemUIServer"]
+            try? systemUI.run()
         }
     }
 
@@ -71,11 +79,26 @@ enum SystemChrome {
             self.snapshot = nil
         }
         runDefaults(["write", "NSGlobalDomain", "_HIHideMenuBar", "-bool", "false"])
+        setMenuBarVisible(true)
         restartDock()
         let task = Process()
         task.executableURL = URL(fileURLWithPath: dockBinary)
         task.arguments = ["SystemUIServer"]
         try? task.run()
+    }
+
+    /// Use `NSMenuBarManager`'s private `setMenuBarVisible:` selector via
+    /// runtime lookup. This takes effect immediately without needing to
+    /// restart SystemUIServer. If the selector doesn't exist (older macOS,
+    /// or SDK rename) we silently no-op — the defaults + SystemUIServer
+    /// restart path still applies.
+    private static func setMenuBarVisible(_ visible: Bool) {
+        guard let managerClass = NSClassFromString("NSMenuBarManager") as? NSObject.Type else { return }
+        guard let manager = managerClass.value(forKeyPath: "sharedMenuBarManager") as? NSObject else { return }
+        let selector = NSSelectorFromString("setMenuBarVisible:")
+        guard manager.responds(to: selector) else { return }
+        // The selector takes a BOOL (ObjC) which bridges to ObjCBool on Swift.
+        manager.perform(selector, with: NSNumber(value: visible))
     }
 
     private static func restartDock() {

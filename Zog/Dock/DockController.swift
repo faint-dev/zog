@@ -2,14 +2,12 @@ import AppKit
 import SwiftUI
 import Combine
 
-/// Manages the vertical dock pill + the two separate circular FABs below it
-/// (moon / check) as in reference 1.
+/// Manages the vertical dock pill. (Moon / check FABs were removed — the
+/// user didn't ask for them.)
 @MainActor
 final class DockController {
     private let services: ServiceContainer
     private var dockPanel: PanelWindow<AnyView>?
-    private var moonPanel: PanelWindow<AnyView>?
-    private var checkPanel: PanelWindow<AnyView>?
     private var cancellables = Set<AnyCancellable>()
     private var sizeObserver: NSObjectProtocol?
 
@@ -18,62 +16,26 @@ final class DockController {
     }
 
     func show() {
-        let fab = ZogTheme.fabSize + 4
         dockPanel = PanelWindow(
             rootView: AnyView(dockRoot),
             size: NSSize(width: ZogTheme.dockWidth + 8, height: 360),
             style: .dock
         )
-        moonPanel = PanelWindow(
-            rootView: AnyView(DockMoonButton().padding(2)),
-            size: NSSize(width: fab, height: fab),
-            style: .dock
-        )
-        checkPanel = PanelWindow(
-            rootView: AnyView(DockCheckButton().padding(2)),
-            size: NSSize(width: fab, height: fab),
-            style: .dock
-        )
-
         reposition()
         dockPanel?.orderFrontRegardless()
-        moonPanel?.orderFrontRegardless()
-        checkPanel?.orderFrontRegardless()
         observe()
     }
 
     func hide() {
         dockPanel?.orderOut(nil)
-        moonPanel?.orderOut(nil)
-        checkPanel?.orderOut(nil)
     }
 
     func reposition() {
         let dockH = estimatedDockHeight()
         let dockW = ZogTheme.dockWidth + 8
-        let fab = ZogTheme.fabSize + 4
-        let fabStack = fab * 2 + ZogTheme.fabGap + 10
 
-        var dockRect = ScreenLayout.rightDock(width: dockW, height: dockH)
-        dockRect.origin.y += fabStack / 2
-
+        let dockRect = ScreenLayout.rightDock(width: dockW, height: dockH)
         dockPanel?.setFrame(dockRect, display: true)
-
-        let fabX = dockRect.midX - fab / 2
-        let moonFrame = NSRect(
-            x: fabX,
-            y: dockRect.minY - ZogTheme.fabGap - fab,
-            width: fab,
-            height: fab
-        )
-        let checkFrame = NSRect(
-            x: fabX,
-            y: moonFrame.minY - ZogTheme.fabGap - fab,
-            width: fab,
-            height: fab
-        )
-        moonPanel?.setFrame(moonFrame, display: true)
-        checkPanel?.setFrame(checkFrame, display: true)
     }
 
     private var dockRoot: some View {

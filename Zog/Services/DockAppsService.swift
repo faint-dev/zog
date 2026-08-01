@@ -13,21 +13,33 @@ final class DockAppsService: ObservableObject {
         var isFrontmost: Bool
     }
 
+    /// Default pinned apps the first time Zog runs. After that the user's
+    /// pin/unpin choices are persisted in UserDefaults.
+    private static let defaultPinnedBundleIDs = [
+        "com.apple.finder",
+        "com.apple.Safari",
+        "com.apple.Terminal",
+        "com.apple.Music"
+    ]
+
+    private static let pinnedDefaultsKey = "zog.dock.pinnedBundleIDs"
+
     @Published private(set) var apps: [DockApp] = []
-    /// Pinned apps always shown in the dock, regardless of running state.
     @Published private(set) var pinned: [DockApp] = []
+    @Published private(set) var pinnedBundleIDs: [String] = []
 
     private var observers: [NSObjectProtocol] = []
     private var timer: Timer?
 
-    /// Preferred pinned apps for the dock.
-    private let pinnedBundleIDs = [
-        "com.apple.finder",
-        "com.apple.Safari",
-        "com.apple.Terminal",
-        "com.apple.Music",
-        "com.apple.systempreferences"
-    ]
+    init() {
+        let defaults = UserDefaults.standard
+        if let saved = defaults.array(forKey: Self.pinnedDefaultsKey) as? [String] {
+            self.pinnedBundleIDs = saved
+        } else {
+            self.pinnedBundleIDs = Self.defaultPinnedBundleIDs
+            defaults.set(Self.defaultPinnedBundleIDs, forKey: Self.pinnedDefaultsKey)
+        }
+    }
 
     func start() {
         refresh()
@@ -57,6 +69,8 @@ final class DockAppsService: ObservableObject {
         timer = nil
     }
 
+    // MARK: - App actions
+
     func launchOrActivate(_ app: DockApp) {
         if let url = app.bundleURL {
             NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
@@ -70,6 +84,42 @@ final class DockAppsService: ObservableObject {
         }
     }
 
+    func quit(_ app: DockApp) {
+        guard let running = NSWorkspace.shared.runningApplications.first(where: { $0.bundleIdentifier == app.id }) else { return }
+        running.terminate()
+    }
+
+    func hide(_ app: DockApp) {
+        guard let running = NSWorkspace.shared.runningApplications.first(where: { $0.bundleIdentifier == app.id }) else { return }
+        running.hide()
+    }
+
+    func showInFinder(_ app: DockApp) {
+        let target: URL?
+        if let url = app.bundleURL {
+            target = url
+        } else if let bid = Optional(app.id),
+                  let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bid) {
+            target = url
+        } else {
+            target = nil
+        }
+        guard let target else { return }
+        NSWorkspace.shared.activateFileViewerSelecting([target])
+    }
+
+    func togglePin(_ bundleID: String) {
+        if pinnedBundleIDs.contains(bundleID) {
+            pinnedBundleIDs.removeAll { $0 == bundleID }
+        } else {
+            pinnedBundleIDs.append(bundleID)
+        }
+        UserDefaults.standard.set(pinnedBundleIDs, forKey: Self.pinnedDefaultsKey)
+        refresh()
+    }
+
+    // MARK: - Refresh
+
     private func refresh() {
         let running = NSWorkspace.shared.runningApplications.filter {
             $0.activationPolicy == .regular
@@ -81,7 +131,7 @@ final class DockAppsService: ObservableObject {
             (apps + pinned).map { ($0.id, $0) }
         )
 
-        // Pinned apps: always present, marked as running if currently open.
+        // Pinned apps: always present if installed, marked as running if currently open.
         var pinnedApps: [DockApp] = []
         for bid in pinnedBundleIDs {
             guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bid) else { continue }

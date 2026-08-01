@@ -2,27 +2,23 @@ import AppKit
 import SwiftUI
 
 /// Vertical dock replacement: pinned apps + running apps + workspace dots.
-/// Moon / check FABs live in separate circular panels managed by `DockController`.
 struct VerticalDockView: View {
     @ObservedObject var workspaces: WorkspaceService
     @ObservedObject var dockApps: DockAppsService
 
     /// Caps so the dock never outgrows the screen.
-    private let maxPinned = 6
+    private let maxPinned = 8
     private let maxRunning = 8
     private let shownSpaces = 3
 
     var body: some View {
         VStack(spacing: 6) {
-            // Pinned apps (always shown if installed on the system)
-            appsSection(
-                title: nil,
-                apps: dockApps.pinned.prefix(maxPinned).map { $0 }
-            )
+            // Pinned apps
+            appsSection(apps: dockApps.pinned.prefix(maxPinned).map { $0 })
 
             if !runningApps.isEmpty {
                 dockSeparator
-                appsSection(title: nil, apps: runningApps)
+                appsSection(apps: runningApps)
             }
 
             dockSeparator
@@ -49,16 +45,24 @@ struct VerticalDockView: View {
     // MARK: - App sections
 
     @ViewBuilder
-    private func appsSection(title: String?, apps: [DockAppsService.DockApp]) -> some View {
+    private func appsSection(apps: [DockAppsService.DockApp]) -> some View {
         VStack(spacing: 6) {
             ForEach(apps, id: \.id) { app in
-                DockAppButton(app: app) { dockApps.launchOrActivate(app) }
+                DockAppButton(
+                    app: app,
+                    isPinned: dockApps.pinnedBundleIDs.contains(app.id),
+                    onLaunch: { dockApps.launchOrActivate(app) },
+                    onTogglePin: { dockApps.togglePin(app.id) },
+                    onQuit: { dockApps.quit(app) },
+                    onShowInFinder: { dockApps.showInFinder(app) },
+                    onHide: { dockApps.hide(app) }
+                )
             }
         }
     }
 
     private var runningApps: [DockAppsService.DockApp] {
-        let pinnedIDs = Set(dockApps.pinned.map(\.id))
+        let pinnedIDs = Set(dockApps.pinnedBundleIDs)
         return dockApps.apps
             .filter { $0.isRunning && !pinnedIDs.contains($0.id) }
             .prefix(maxRunning)
@@ -104,16 +108,21 @@ struct VerticalDockView: View {
     }
 }
 
-// MARK: - Single dock-app button
+// MARK: - Single dock-app button (with right-click menu)
 
 private struct DockAppButton: View {
     let app: DockAppsService.DockApp
-    let action: () -> Void
+    let isPinned: Bool
+    let onLaunch: () -> Void
+    let onTogglePin: () -> Void
+    let onQuit: () -> Void
+    let onShowInFinder: () -> Void
+    let onHide: () -> Void
 
     @State private var isHovered = false
 
     var body: some View {
-        Button(action: action) {
+        Button(action: onLaunch) {
             ZStack(alignment: .bottom) {
                 AppIconView(image: app.icon, size: 24)
                     .opacity(app.isRunning ? 1 : 0.55)
@@ -143,58 +152,19 @@ private struct DockAppButton: View {
         .onHover { hovering in
             withAnimation(ZogTheme.hoverSpring) { isHovered = hovering }
         }
-    }
-}
-
-// MARK: - Circular action buttons (separate from dock — moon / check)
-
-struct DockMoonButton: View {
-    var body: some View {
-        Button(action: toggleDarkAppearance) {
-            CircularFAB {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [ZogTheme.foreground, ZogTheme.foreground.opacity(0)],
-                            startPoint: .leading,
-                            endPoint: UnitPoint(x: 0.55, y: 0.5)
-                        )
-                    )
-                    .frame(width: 14, height: 14)
+        .contextMenu {
+            Button(isPinned ? "Unpin from Dock" : "Pin to Dock") {
+                onTogglePin()
             }
-        }
-        .buttonStyle(.plain)
-        .help("Appearance")
-    }
-
-    private func toggleDarkAppearance() {
-        let script = """
-        tell application "System Events"
-            tell appearance preferences
-                set dark mode to not dark mode
-            end tell
-        end tell
-        """
-        var error: NSDictionary?
-        NSAppleScript(source: script)?.executeAndReturnError(&error)
-    }
-}
-
-struct DockCheckButton: View {
-    var body: some View {
-        Button(action: openMissionControl) {
-            CircularFAB {
-                CheckMarkGlyph()
+            Divider()
+            Button("Open") { onLaunch() }
+            if app.isRunning {
+                Button("Hide \(app.name)") { onHide() }
+                Divider()
+                Button("Quit \(app.name)", role: .destructive) { onQuit() }
             }
+            Divider()
+            Button("Show in Finder") { onShowInFinder() }
         }
-        .buttonStyle(.plain)
-        .help("Mission Control")
-    }
-
-    private func openMissionControl() {
-        let task = Process()
-        task.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-        task.arguments = ["-a", "Mission Control"]
-        try? task.run()
     }
 }
